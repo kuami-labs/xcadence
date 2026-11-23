@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+.turbo/
+.env
+.secrets/
+db/data/
+coverage/
+
+# Réglages personnels de Claude Code
+.claude/settings.local.json
+CLAUDE.local.md

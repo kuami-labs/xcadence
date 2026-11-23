@@ -1,0 +1,54 @@
+# Stack de développement. Versions figées : les mêmes qu'en production.
+name: xcadence
+
+services:
+  # Le poste de travail : VS Code s'y attache, on y lance api, worker et web
+  dev:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    command: sleep infinity
+    volumes:
+      - .:/workspace:cached
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: xcadence
+      POSTGRES_PASSWORD: xcadence
+      POSTGRES_DB: xcadence
+    volumes:
+      # Données dans un dossier du projet, ignoré par git : elles survivent aux Rebuild
+      - ./db/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U xcadence -d xcadence']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Capture tous les emails envoyés en dev : http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+
+  # IA locale en conteneur, optionnelle : docker compose --profile ollama up -d
+  ollama:
+    image: ollama/ollama
+    profiles: [ollama]
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  ollama-data:

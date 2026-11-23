@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+
+# Les PR venant de forks n'ont accès à aucun secret
+permissions:
+  contents: read
+
+jobs:
+  qualite:
+    runs-on: ubuntu-latest
+    container: node:24-trixie
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm build
+
+  tests:
+    runs-on: ubuntu-latest
+    container: node:24-trixie
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: xcadence
+          POSTGRES_PASSWORD: xcadence
+          POSTGRES_DB: xcadence
+        options: >-
+          --health-cmd "pg_isready -U xcadence" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7
+    env:
+      DATABASE_URL: postgres://xcadence:xcadence@db:5432/xcadence
+      REDIS_URL: redis://redis:6379
+      SUMMARY_PROVIDER: fake
+    steps:
+      - uses: actions/checkout@v7
+      - run: corepack enable && pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm test

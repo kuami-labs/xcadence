@@ -1,0 +1,11 @@
+/.devcontainer/            @kuami-labs/xcadence-maintainers
+/.github/                  @kuami-labs/xcadence-maintainers
+/compose.yaml              @kuami-labs/xcadence-maintainers
+/packages/db/prisma/       @kuami-labs/xcadence-maintainers
+/eslint.config.mjs         @kuami-labs/xcadence-maintainers
+package.json               @kuami-labs/xcadence-maintainers
+pnpm-lock.yaml             @kuami-labs/xcadence-maintainers
+/SECURITY.md               @kuami-labs/xcadence-maintainers
+/CLAUDE.md                 @kuami-labs/xcadence-maintainers
+/.claude/                  @kuami-labs/xcadence-maintainers
+/docs/08-SECURITE.md       @kuami-labs/xcadence-maintainers

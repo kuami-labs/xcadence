@@ -8,6 +8,7 @@ db/data/
 coverage/
 next-env.d.ts
 *.tsbuildinfo
+packages/db/src/generated/
 
 # Consignes pour assistants IA générées par les frameworks (next dev les recrée)
 apps/*/AGENTS.md

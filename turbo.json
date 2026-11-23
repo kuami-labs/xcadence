@@ -6,7 +6,8 @@
       "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "env": ["DATABASE_URL", "REDIS_URL", "SUMMARY_PROVIDER"]
     },
     "dev": {
       "dependsOn": ["^build"],

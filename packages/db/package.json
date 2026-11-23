@@ -6,10 +6,22 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "seed": "prisma db seed",
-    "reset": "prisma migrate reset --force"
+    "reset": "prisma migrate reset --force",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "test": "prisma generate && vitest run"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "prisma": "7.10.1"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   }
 }

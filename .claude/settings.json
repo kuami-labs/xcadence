@@ -7,11 +7,6 @@
       "Read(./.secrets/**)",
       "Read(./db/data/**)"
     ],
-    "ask": [
-      "Bash(gh api:*)",
-      "Bash(gh repo:*)",
-      "Bash(git push:*)",
-      "Bash(docker system prune:*)"
-    ]
+    "ask": ["Bash(gh api:*)", "Bash(gh repo:*)", "Bash(git push:*)", "Bash(docker system prune:*)"]
   }
 }

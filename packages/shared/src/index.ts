@@ -1,0 +1,4 @@
+/** Réponse de GET /health, partagée entre l'API et le front. */
+export interface HealthResponse {
+  status: 'ok';
+}

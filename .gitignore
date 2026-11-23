@@ -6,6 +6,7 @@ dist/
 .secrets/
 db/data/
 coverage/
+next-env.d.ts
 
 # Réglages personnels de Claude Code
 .claude/settings.local.json

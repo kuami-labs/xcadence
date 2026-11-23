@@ -27,7 +27,7 @@ jobs:
           AUTEUR: ${{ github.event.pull_request.user.login }}
           # Identifiants GitHub autorisés à modifier les fichiers protégés, séparés par des espaces.
           # Mode solo : le seul mainteneur. Mode équipe : ajouter chaque membre de xcadence-maintainers.
-          MAINTENEURS: "kratt15"
+          MAINTENEURS: 'kratt15'
         run: |
           # Liste des chemins protégés (expressions régulières)
           PROTEGES='^(CLAUDE\.md|\.claude/|\.github/|\.devcontainer/|compose\.yaml|package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|SECURITY\.md|CODE_OF_CONDUCT\.md|LICENSE|docs/07-COLLABORATION\.md|docs/08-SECURITE\.md|docs/adr/|packages/db/prisma/migrations/)'

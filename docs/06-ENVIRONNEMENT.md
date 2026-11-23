@@ -268,6 +268,10 @@ coverage/
 next-env.d.ts
 *.tsbuildinfo
 
+# Consignes pour assistants IA générées par les frameworks (next dev les recrée)
+apps/*/AGENTS.md
+apps/*/CLAUDE.md
+
 # Réglages personnels de Claude Code
 .claude/settings.local.json
 CLAUDE.local.md

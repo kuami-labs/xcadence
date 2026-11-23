@@ -266,6 +266,7 @@ dist/
 db/data/
 coverage/
 next-env.d.ts
+*.tsbuildinfo
 
 # Réglages personnels de Claude Code
 .claude/settings.local.json

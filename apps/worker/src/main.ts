@@ -1,12 +1,11 @@
-import 'reflect-metadata';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { WorkerModule } from './app.module';
+import { AppModule } from './app.module.js';
 
-async function bootstrap(): Promise<void> {
-  const app = await NestFactory.createApplicationContext(WorkerModule);
+// Le worker n'expose pas de HTTP : un contexte applicatif suffit pour les jobs.
+async function bootstrap() {
+  const app = await NestFactory.createApplicationContext(AppModule);
   app.enableShutdownHooks();
   Logger.log('Worker démarré', 'Worker');
 }
-
-void bootstrap();
+await bootstrap();

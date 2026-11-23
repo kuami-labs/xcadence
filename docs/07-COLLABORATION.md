@@ -216,16 +216,17 @@ export default defineConfig(
 ```json
 "scripts": {
   "prepare": "husky",
-  "lint": "eslint .",
+  "lint": "eslint --flag v10_config_lookup_from_file .",
   "format": "prettier --write . '!db/data'",
   "format:check": "prettier --check . '!db/data'"
 },
 "lint-staged": {
-  "*.{ts,tsx,js,mjs}": ["eslint --fix", "prettier --write"],
+  "*.{ts,tsx,js,mjs}": ["eslint --flag v10_config_lookup_from_file --fix", "prettier --write"],
   "*.{json,md,yml,yaml,css}": "prettier --write"
 }
 ```
 
+- `--flag v10_config_lookup_from_file` : chaque fichier utilise le `eslint.config.mjs` le plus proche. `apps/web` garde ainsi la configuration officielle de Next.js (`eslint-config-next`), qui impose ESLint 9.
 - Le script `prepare` installe les hooks à chaque `pnpm install` : rien à faire pour les contributeurs.
 - **Le hook tourne dans le conteneur**, même quand on commite depuis WSL (Claude Desktop) : les hooks appellent `docker compose exec -T dev …` si `node` est absent de la machine.
 

@@ -7,7 +7,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
-    "lint": "eslint .",
+    "lint": "eslint --flag v10_config_lookup_from_file .",
     "format": "prettier --write . '!db/data'",
     "format:check": "prettier --check . '!db/data'",
     "db:migrate": "pnpm --filter @xcadence/db migrate",
@@ -16,7 +16,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs}": [
-      "eslint --fix",
+      "eslint --flag v10_config_lookup_from_file --fix",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml,css}": "prettier --write"
@@ -25,9 +25,9 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
-    "@eslint/js": "^10.0.1",
+    "@eslint/js": "^9.39.5",
     "@types/node": "^26.6.6",
-    "eslint": "^10.15.0",
+    "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.2",

@@ -1,0 +1,40 @@
+{
+  "name": "xcadence",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "prepare": "husky",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "eslint --flag v10_config_lookup_from_file .",
+    "format": "prettier --write . '!db/data'",
+    "format:check": "prettier --check . '!db/data'",
+    "db:migrate": "pnpm --filter @xcadence/db migrate",
+    "db:seed": "pnpm --filter @xcadence/db seed",
+    "db:reset": "pnpm --filter @xcadence/db reset"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs}": [
+      "eslint --flag v10_config_lookup_from_file --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": "prettier --write"
+  },
+  "packageManager": "pnpm@12.23.0+sha512.02da94ffaf133f46074322afe552f90d40b5f71ae259aefbccdacc5085b1d617e98d65e0131f5748b9b67445978ee5055d7d59a473f1eef0d504854fefcd5975",
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^26.6.6",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.2",
+    "prettier": "^3.10.1",
+    "turbo": "^2.11.13",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.1"
+  }
+}

@@ -26,39 +26,39 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Modules NestJS
 
-| Module | Processus | Responsabilité |
-| --- | --- | --- |
-| `AuthModule` | API | Connexion GitHub OAuth, sessions, guard par organisation |
-| `GithubModule` | API + worker | Client Octokit authentifié par installation, gestion des quotas |
-| `WebhooksModule` | API | Vérifie la signature, enregistre l'événement, enfile un job, répond 202 |
-| `SyncModule` | Worker | Import initial sur 90 jours, traitement des événements, resynchronisation nocturne |
-| `MetricsModule` | Worker | Calcule les 7 métriques par semaine et par dépôt, écrit `weekly_metrics` |
-| `InsightsModule` | Worker | Génère le résumé hebdomadaire via `SummaryProvider`, détecte les alertes |
-| `NotificationsModule` | Worker | Envoie le résumé et les alertes par email |
-| `DashboardModule` | API | Endpoints de lecture pour le front |
+| Module                | Processus    | Responsabilité                                                                     |
+| --------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| `AuthModule`          | API          | Connexion GitHub OAuth, sessions, guard par organisation                           |
+| `GithubModule`        | API + worker | Client Octokit authentifié par installation, gestion des quotas                    |
+| `WebhooksModule`      | API          | Vérifie la signature, enregistre l'événement, enfile un job, répond 202            |
+| `SyncModule`          | Worker       | Import initial sur 90 jours, traitement des événements, resynchronisation nocturne |
+| `MetricsModule`       | Worker       | Calcule les 7 métriques par semaine et par dépôt, écrit `weekly_metrics`           |
+| `InsightsModule`      | Worker       | Génère le résumé hebdomadaire via `SummaryProvider`, détecte les alertes           |
+| `NotificationsModule` | Worker       | Envoie le résumé et les alertes par email                                          |
+| `DashboardModule`     | API          | Endpoints de lecture pour le front                                                 |
 
 ## Endpoints principaux
 
-| Méthode et route | Rôle |
-| --- | --- |
-| `GET /auth/github`, `GET /auth/github/callback` | Connexion |
-| `POST /webhooks/github` | Réception des événements GitHub |
-| `GET /orgs/:orgId/repositories` | Dépôts et statut de suivi |
-| `PATCH /orgs/:orgId/repositories/:id` | Suivre un dépôt, règle de déploiement |
-| `GET /orgs/:orgId/metrics?repo=&from=&to=` | Métriques DORA et de flux par semaine |
-| `GET /orgs/:orgId/bottlenecks` | PR bloquées, jobs de CI lents |
-| `GET /orgs/:orgId/summaries/latest` | Dernier résumé |
-| `GET /orgs/:orgId/sync-status` | Avancement de l'import |
+| Méthode et route                                | Rôle                                  |
+| ----------------------------------------------- | ------------------------------------- |
+| `GET /auth/github`, `GET /auth/github/callback` | Connexion                             |
+| `POST /webhooks/github`                         | Réception des événements GitHub       |
+| `GET /orgs/:orgId/repositories`                 | Dépôts et statut de suivi             |
+| `PATCH /orgs/:orgId/repositories/:id`           | Suivre un dépôt, règle de déploiement |
+| `GET /orgs/:orgId/metrics?repo=&from=&to=`      | Métriques DORA et de flux par semaine |
+| `GET /orgs/:orgId/bottlenecks`                  | PR bloquées, jobs de CI lents         |
+| `GET /orgs/:orgId/summaries/latest`             | Dernier résumé                        |
+| `GET /orgs/:orgId/sync-status`                  | Avancement de l'import                |
 
 ## Jobs BullMQ
 
-| Job | Déclencheur | Rôle |
-| --- | --- | --- |
-| `backfill-repository` | Ajout d'un dépôt suivi | Importe 90 jours de PR, revues, déploiements et runs |
-| `process-webhook-event` | Chaque webhook reçu | Met à jour les données brutes concernées |
-| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics` |
-| `generate-weekly-summary` | Lundi 7 h | Génère le résumé IA de la semaine |
-| `send-notifications` | Après le résumé ou une alerte | Envoie les emails |
+| Job                        | Déclencheur                        | Rôle                                                 |
+| -------------------------- | ---------------------------------- | ---------------------------------------------------- |
+| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs |
+| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées             |
+| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                           |
+| `generate-weekly-summary`  | Lundi 7 h                          | Génère le résumé IA de la semaine                    |
+| `send-notifications`       | Après le résumé ou une alerte      | Envoie les emails                                    |
 
 ## Sécurité
 

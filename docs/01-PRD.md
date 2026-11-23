@@ -17,11 +17,11 @@ Il donne à un CTO, en 5 minutes par semaine, l'état de santé de son équipe t
 
 La v1 sert un seul rôle prioritaire, le CTO, sur une seule source, GitHub.
 
-| Utilisateur | Besoin principal | Priorité v1 |
-| --- | --- | --- |
-| CTO / Head of Engineering | Voir la tendance et les goulots, décider où agir | Principal |
-| Tech Lead | Suivre les PR bloquées et la CI de son équipe | Secondaire |
-| Développeur | Voir ses PR en attente de revue | Hors v1 |
+| Utilisateur               | Besoin principal                                 | Priorité v1 |
+| ------------------------- | ------------------------------------------------ | ----------- |
+| CTO / Head of Engineering | Voir la tendance et les goulots, décider où agir | Principal   |
+| Tech Lead                 | Suivre les PR bloquées et la CI de son équipe    | Secondaire  |
+| Développeur               | Voir ses PR en attente de revue                  | Hors v1     |
 
 **Objectifs de la v1**
 
@@ -37,29 +37,29 @@ La v1 sert un seul rôle prioritaire, le CTO, sur une seule source, GitHub.
 
 ## Fonctionnalités et user stories
 
-| # | Fonctionnalité | User story | Critère d'acceptation | Priorité |
-| --- | --- | --- | --- | --- |
-| F1 | Connexion GitHub | En tant que CTO, je connecte mon organisation via une GitHub App et je choisis les dépôts suivis | Installation en moins de 2 min, dépôts listés | Must |
-| F2 | Import et synchronisation | En tant que CTO, je vois 90 jours d'historique dès la connexion, puis les nouveautés en continu | Import initial < 10 min ; webhooks traités < 1 min | Must |
-| F3 | Tableau de bord DORA | En tant que CTO, je vois les 4 métriques DORA, leur tendance et leur niveau (Elite à Low) | Filtres par dépôt et période (4, 12 semaines) | Must |
-| F4 | Goulots d'étranglement | En tant que Tech Lead, je vois les PR bloquées, les revues lentes et la CI qui ralentit | Liste des PR en attente > 48 h, tri par ancienneté | Must |
-| F5 | Résumé hebdomadaire IA | En tant que CTO, je reçois chaque lundi 5 lignes qui disent ce qui a changé et quoi regarder | Chaque phrase cite un chiffre réel du tableau de bord | Should |
-| F6 | Alertes | En tant que CTO, je suis prévenu quand une métrique se dégrade fortement | Seuil configurable, email ou Slack | Could |
-| F7 | Tests instables | En tant que Tech Lead, je vois les jobs de CI qui échouent puis passent sans changement | Top 10 des jobs instables | Could |
+| #   | Fonctionnalité            | User story                                                                                       | Critère d'acceptation                                 | Priorité |
+| --- | ------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | -------- |
+| F1  | Connexion GitHub          | En tant que CTO, je connecte mon organisation via une GitHub App et je choisis les dépôts suivis | Installation en moins de 2 min, dépôts listés         | Must     |
+| F2  | Import et synchronisation | En tant que CTO, je vois 90 jours d'historique dès la connexion, puis les nouveautés en continu  | Import initial < 10 min ; webhooks traités < 1 min    | Must     |
+| F3  | Tableau de bord DORA      | En tant que CTO, je vois les 4 métriques DORA, leur tendance et leur niveau (Elite à Low)        | Filtres par dépôt et période (4, 12 semaines)         | Must     |
+| F4  | Goulots d'étranglement    | En tant que Tech Lead, je vois les PR bloquées, les revues lentes et la CI qui ralentit          | Liste des PR en attente > 48 h, tri par ancienneté    | Must     |
+| F5  | Résumé hebdomadaire IA    | En tant que CTO, je reçois chaque lundi 5 lignes qui disent ce qui a changé et quoi regarder     | Chaque phrase cite un chiffre réel du tableau de bord | Should   |
+| F6  | Alertes                   | En tant que CTO, je suis prévenu quand une métrique se dégrade fortement                         | Seuil configurable, email ou Slack                    | Could    |
+| F7  | Tests instables           | En tant que Tech Lead, je vois les jobs de CI qui échouent puis passent sans changement          | Top 10 des jobs instables                             | Could    |
 
 ## Métriques calculées
 
 Toutes les métriques sont calculées par semaine et par dépôt, à partir des seules données GitHub.
 
-| Métrique | Définition | Source GitHub | Unité |
-| --- | --- | --- | --- |
-| Fréquence de déploiement (DORA) | Nombre de déploiements réussis en production | Deployments, ou runs Actions d'un workflow marqué « production » | déploiements / semaine |
-| Délai de livraison (DORA) | Temps entre le premier commit d'une PR et son déploiement en production | Commits, PR, Deployments | heures (médiane) |
-| Taux d'échec des changements (DORA) | Part des déploiements suivis d'un rollback, d'un hotfix ou d'un revert sous 48 h | Deployments, PR étiquetées hotfix, reverts | % |
-| Temps de rétablissement (DORA) | Temps entre un déploiement en échec et le déploiement correctif suivant | Deployments | heures (médiane) |
-| Temps avant première revue | Temps entre l'ouverture d'une PR (hors brouillon) et la première revue | PR, Reviews | heures (médiane) |
-| Durée de vie des PR | Temps entre l'ouverture et la fusion d'une PR | PR | heures (médiane) |
-| Durée de la CI | Durée des runs GitHub Actions sur la branche principale | Workflow runs | minutes (p50 et p90) |
+| Métrique                            | Définition                                                                       | Source GitHub                                                    | Unité                  |
+| ----------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ---------------------- |
+| Fréquence de déploiement (DORA)     | Nombre de déploiements réussis en production                                     | Deployments, ou runs Actions d'un workflow marqué « production » | déploiements / semaine |
+| Délai de livraison (DORA)           | Temps entre le premier commit d'une PR et son déploiement en production          | Commits, PR, Deployments                                         | heures (médiane)       |
+| Taux d'échec des changements (DORA) | Part des déploiements suivis d'un rollback, d'un hotfix ou d'un revert sous 48 h | Deployments, PR étiquetées hotfix, reverts                       | %                      |
+| Temps de rétablissement (DORA)      | Temps entre un déploiement en échec et le déploiement correctif suivant          | Deployments                                                      | heures (médiane)       |
+| Temps avant première revue          | Temps entre l'ouverture d'une PR (hors brouillon) et la première revue           | PR, Reviews                                                      | heures (médiane)       |
+| Durée de vie des PR                 | Temps entre l'ouverture et la fusion d'une PR                                    | PR                                                               | heures (médiane)       |
+| Durée de la CI                      | Durée des runs GitHub Actions sur la branche principale                          | Workflow runs                                                    | minutes (p50 et p90)   |
 
 Les niveaux Elite, High, Medium et Low suivent les seuils publiés par le programme DORA ; ils seront vérifiés sur la dernière édition du rapport avant l'implémentation.
 

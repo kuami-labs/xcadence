@@ -1,0 +1,9 @@
+// Schéma XCadence : les tables arrivent avec docs/05-DATABASE.md, étape par étape.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}

@@ -8,6 +8,7 @@ import type {
   RecentPullRequest,
   RepositoryView,
   SyncStatusResponse,
+  WeeklySummaryView,
 } from '@xcadence/shared';
 import { apiFetch } from '@/lib/api/client';
 
@@ -98,6 +99,16 @@ export function useRecentPullRequests(orgId: string | undefined, repositoryId: s
     queryKey: ['pull-requests', orgId, repositoryId],
     queryFn: () =>
       apiFetch<RecentPullRequest[]>(`/orgs/${orgId}/repositories/${repositoryId}/pull-requests`),
+    enabled: Boolean(orgId),
+  });
+}
+
+/** Dernier résumé hebdomadaire de l'organisation (F5). */
+export function useLatestSummary(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ['summary', orgId],
+    queryFn: () =>
+      apiFetch<{ summary: WeeklySummaryView | null }>(`/orgs/${orgId}/summaries/latest`),
     enabled: Boolean(orgId),
   });
 }

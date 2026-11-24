@@ -195,6 +195,38 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
       await get(`/orgs/${otherOrgId}/sync-status`).expect(403);
     });
 
+    it('renvoie le dernier résumé de la semaine', async () => {
+      let res = await get(`/orgs/${orgId}/summaries/latest`).expect(200);
+      expect(res.body).toEqual({ summary: null });
+      await prisma.weeklySummary.createMany({
+        data: [
+          {
+            organizationId: orgId,
+            weekStart: new Date('2026-11-16'),
+            content: 'Ancien.',
+            model: 'repli',
+          },
+          {
+            organizationId: orgId,
+            weekStart: new Date('2026-11-23'),
+            content: '6 déploiements.',
+            model: 'llama',
+          },
+          {
+            organizationId: otherOrgId,
+            weekStart: new Date('2026-11-30'),
+            content: 'Secret.',
+            model: 'x',
+          },
+        ],
+      });
+      res = await get(`/orgs/${orgId}/summaries/latest`).expect(200);
+      expect(res.body).toEqual({
+        summary: { weekStart: '2026-11-23', content: '6 déploiements.', model: 'llama' },
+      });
+      await get(`/orgs/${otherOrgId}/summaries/latest`).expect(403);
+    });
+
     it("ne donne jamais accès aux données d'une autre organisation", async () => {
       await get(`/orgs/${otherOrgId}/metrics`).expect(403);
       await get(`/orgs/${otherOrgId}/bottlenecks`).expect(403);

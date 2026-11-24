@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardFilters, PERIOD_OPTIONS } from '@/components/dashboard/filters';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TrendChart } from '@/components/dashboard/trend-chart';
+import { WeeklySummary } from '@/components/dashboard/weekly-summary';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMetrics, useRepositories } from '@/hooks/use-dashboard';
 import { useOrganization } from '@/hooks/use-organization';
@@ -100,6 +101,7 @@ export function Dashboard() {
               />
             ))}
           </section>
+          <WeeklySummary orgId={orgId} />
           <section className="grid gap-4 md:grid-cols-2">
             {DORA_CARDS.map((metric) => (
               <Card key={metric.key}>

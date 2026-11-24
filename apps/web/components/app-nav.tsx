@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 const LINKS = [
   { href: '/dashboard', label: "Vue d'ensemble" },
   { href: '/bottlenecks', label: 'Goulots' },
+  { href: '/settings', label: 'Paramètres' },
 ] as const;
 
 /** Navigation entre les pages ; garde l'organisation choisie (?org=). */

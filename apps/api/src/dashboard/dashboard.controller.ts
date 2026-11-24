@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
-import type { BottlenecksResponse, MetricsResponse } from '@xcadence/shared';
+import type { BottlenecksResponse, MetricsResponse, SyncStatusResponse } from '@xcadence/shared';
 import { OrganizationGuard } from '../auth/organization/organization.guard.js';
 import { SessionGuard } from '../auth/session/session.guard.js';
 import { DashboardService } from './dashboard.service.js';
@@ -22,5 +22,10 @@ export class DashboardController {
   @Get('bottlenecks')
   bottlenecks(@Param('orgId') orgId: string): Promise<BottlenecksResponse> {
     return this.dashboard.bottlenecks(orgId);
+  }
+
+  @Get('sync-status')
+  syncStatus(@Param('orgId') orgId: string): Promise<SyncStatusResponse> {
+    return this.dashboard.syncStatus(orgId);
   }
 }

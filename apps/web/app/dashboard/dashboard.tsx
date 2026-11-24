@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { DashboardFilters, PERIOD_OPTIONS } from '@/components/dashboard/filters';
 import { MetricCard } from '@/components/dashboard/metric-card';
@@ -44,7 +45,12 @@ export function Dashboard() {
     return (
       <main className="mx-auto w-full max-w-5xl p-8">
         <h1 className="text-2xl font-semibold">Tableau de bord</h1>
-        <p className="mt-2 text-muted-foreground">Aucune organisation : installez la GitHub App.</p>
+        <p className="mt-2 text-muted-foreground">
+          Aucune organisation pour l&apos;instant.{' '}
+          <Link className="underline" href="/onboarding">
+            Installer la GitHub App
+          </Link>
+        </p>
       </main>
     );
   }
@@ -74,8 +80,11 @@ export function Dashboard() {
         <p className="text-muted-foreground">Chargement des métriques…</p>
       ) : values.length === 0 ? (
         <p className="text-muted-foreground">
-          Aucune donnée pour l&apos;instant : suivez un dépôt, l&apos;import des 90 derniers jours
-          démarre aussitôt.
+          Aucune donnée pour l&apos;instant.{' '}
+          <Link className="underline" href={`/settings?org=${orgId}`}>
+            Suivez un dépôt
+          </Link>{' '}
+          : l&apos;import des 90 derniers jours démarre aussitôt.
         </p>
       ) : (
         <>

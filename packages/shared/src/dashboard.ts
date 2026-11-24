@@ -46,3 +46,21 @@ export interface BottlenecksResponse {
   /** Workflows les plus lents (p90), avec leur taux d'échec. */
   slowWorkflows: BottleneckWorkflow[];
 }
+
+/** GET /orgs/:orgId/sync-status : imports récents de l'organisation. */
+export interface SyncStatusResponse {
+  /** Un import est en attente ou en cours. */
+  inProgress: boolean;
+  jobs: {
+    type: 'backfill' | 'webhook' | 'recompute';
+    status: 'queued' | 'running' | 'succeeded' | 'failed';
+    startedAt: string | null;
+    finishedAt: string | null;
+  }[];
+}
+
+/** GET /config : réglages publics utiles au front. */
+export interface PublicConfigResponse {
+  /** Adresse d'installation de la GitHub App ; null si GITHUB_APP_SLUG n'est pas défini. */
+  githubAppInstallUrl: string | null;
+}

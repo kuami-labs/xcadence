@@ -2,6 +2,7 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type ProcessWebhookEventJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
+import { MetricsScheduler } from '../metrics/metrics.scheduler.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DeploymentStatusEventsHandler } from './deployment-status-events.handler.js';
 import { InstallationHandler } from './installation.handler.js';
@@ -27,6 +28,7 @@ export class WebhookEventsProcessor extends WorkerHost {
     pullRequests: PullRequestEventsHandler,
     workflowRuns: WorkflowRunEventsHandler,
     deployments: DeploymentStatusEventsHandler,
+    private readonly metrics: MetricsScheduler,
   ) {
     super();
     this.handlers = [installation, pullRequests, workflowRuns, deployments];
@@ -65,7 +67,23 @@ export class WebhookEventsProcessor extends WorkerHost {
       where: { id: event.id },
       data: { processedAt: new Date() },
     });
+    await this.scheduleRecompute(event.payload);
     this.logger.log(`Événement ${event.eventType} ${event.id} traité`);
     return 'processed';
+  }
+
+  /** Après un événement sur un dépôt suivi, recalcul (regroupé) des métriques de son organisation. */
+  private async scheduleRecompute(payload: unknown): Promise<void> {
+    const githubRepoId = (payload as { repository?: { id?: number } } | null)?.repository?.id;
+    if (!githubRepoId) {
+      return;
+    }
+    const repo = await this.prisma.client.repository.findUnique({
+      where: { githubRepoId: BigInt(githubRepoId) },
+      select: { organizationId: true, isTracked: true },
+    });
+    if (repo?.isTracked) {
+      await this.metrics.scheduleFor(repo.organizationId);
+    }
   }
 }

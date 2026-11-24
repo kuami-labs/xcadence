@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type BackfillRepositoryJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
+import { MetricsScheduler } from '../metrics/metrics.scheduler.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DeploymentsImporter } from './deployments.importer.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
@@ -25,6 +26,7 @@ export class BackfillProcessor extends WorkerHost {
     private readonly pullRequests: PullRequestsImporter,
     private readonly workflowRuns: WorkflowRunsImporter,
     private readonly deployments: DeploymentsImporter,
+    private readonly metrics: MetricsScheduler,
   ) {
     super();
   }
@@ -72,6 +74,7 @@ export class BackfillProcessor extends WorkerHost {
         where: { id: syncJob.id },
         data: { status: 'succeeded', finishedAt: new Date() },
       });
+      await this.metrics.scheduleFor(repo.organizationId);
       this.logger.log(
         `Dépôt ${repo.id} importé : ${pullRequests} PR, ${workflowRuns} runs, ${deployments} déploiements`,
       );

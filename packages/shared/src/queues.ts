@@ -7,6 +7,8 @@ export const QUEUES = {
   webhooks: 'webhook-events',
   /** Imports depuis l'API GitHub. */
   sync: 'sync',
+  /** Recalcul des métriques hebdomadaires. */
+  metrics: 'metrics',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
@@ -14,6 +16,7 @@ export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
 export const JOBS = {
   processWebhookEvent: 'process-webhook-event',
   backfillRepository: 'backfill-repository',
+  recomputeWeeklyMetrics: 'recompute-weekly-metrics',
 } as const;
 
 /** process-webhook-event : l'événement brut est déjà enregistré dans webhook_events. */
@@ -24,6 +27,11 @@ export interface ProcessWebhookEventJob {
 /** backfill-repository : import des 90 derniers jours d'un dépôt suivi. */
 export interface BackfillRepositoryJob {
   repositoryId: string;
+}
+
+/** recompute-weekly-metrics : une organisation, ou toutes (passage nocturne) si absent. */
+export interface RecomputeWeeklyMetricsJob {
+  organizationId?: string;
 }
 
 /** Options de connexion Redis à partir de REDIS_URL (redis://[user:mot-de-passe@]hôte:port[/base]). */

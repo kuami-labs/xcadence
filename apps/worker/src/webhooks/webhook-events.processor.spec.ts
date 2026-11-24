@@ -5,6 +5,7 @@ import { Queue, QueueEvents, type Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import { AppModule } from '../app.module.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
+import type { MetricsScheduler } from '../metrics/metrics.scheduler.js';
 import type { InstallationHandler } from './installation.handler.js';
 import type { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import type { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
@@ -16,15 +17,23 @@ const jobFor = (webhookEventId: string) =>
 
 describe('WebhookEventsProcessor', () => {
   const findUnique = vi.fn();
+  const repoFindUnique = vi.fn();
+  const scheduleFor = vi.fn();
   const updateMany = vi.fn();
   const handle = vi.fn();
   const prHandle = vi.fn().mockResolvedValue(false);
   const processor = new WebhookEventsProcessor(
-    { client: { webhookEvent: { findUnique, updateMany } } } as unknown as PrismaService,
+    {
+      client: {
+        webhookEvent: { findUnique, updateMany },
+        repository: { findUnique: repoFindUnique },
+      },
+    } as unknown as PrismaService,
     { handle } as unknown as InstallationHandler,
     { handle: prHandle } as unknown as PullRequestEventsHandler,
     { handle: prHandle } as unknown as WorkflowRunEventsHandler,
     { handle: prHandle } as unknown as DeploymentStatusEventsHandler,
+    { scheduleFor } as unknown as MetricsScheduler,
   );
 
   beforeEach(() => {
@@ -64,6 +73,24 @@ describe('WebhookEventsProcessor', () => {
     prHandle.mockResolvedValue(true);
     await expect(processor.process(jobFor('e1'))).resolves.toBe('processed');
     expect(prHandle).toHaveBeenCalledWith('pull_request', {});
+  });
+
+  it("planifie le recalcul des métriques de l'organisation d'un dépôt suivi", async () => {
+    findUnique.mockResolvedValue({
+      id: 'e1',
+      eventType: 'pull_request',
+      payload: { repository: { id: 7 } },
+      processedAt: null,
+    });
+    prHandle.mockResolvedValue(true);
+    repoFindUnique.mockResolvedValueOnce({ organizationId: 'o1', isTracked: true });
+    await processor.process(jobFor('e1'));
+    expect(scheduleFor).toHaveBeenCalledWith('o1');
+
+    repoFindUnique.mockResolvedValueOnce({ organizationId: 'o1', isTracked: false });
+    scheduleFor.mockClear();
+    await processor.process(jobFor('e1'));
+    expect(scheduleFor).not.toHaveBeenCalled();
   });
 
   it('laisse non traité un événement pas encore géré', async () => {

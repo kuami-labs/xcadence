@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type ProcessWebhookEventJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { DeploymentStatusEventsHandler } from './deployment-status-events.handler.js';
 import { InstallationHandler } from './installation.handler.js';
 import { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import type { WebhookHandler } from './webhook-handler.js';
@@ -25,9 +26,10 @@ export class WebhookEventsProcessor extends WorkerHost {
     installation: InstallationHandler,
     pullRequests: PullRequestEventsHandler,
     workflowRuns: WorkflowRunEventsHandler,
+    deployments: DeploymentStatusEventsHandler,
   ) {
     super();
-    this.handlers = [installation, pullRequests, workflowRuns];
+    this.handlers = [installation, pullRequests, workflowRuns, deployments];
   }
 
   async process(job: Job<ProcessWebhookEventJob>): Promise<ProcessResult> {
@@ -54,7 +56,7 @@ export class WebhookEventsProcessor extends WorkerHost {
       }
     }
     if (!handled) {
-      // Pas encore géré (déploiements : #23) : laissé non traité pour l'être plus tard.
+      // Pas géré (par exemple installation.suspend) : laissé non traité.
       this.logger.log(`Événement ${event.eventType} ${event.id} ignoré pour l'instant`);
       return 'ignored';
     }

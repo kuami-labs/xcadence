@@ -8,6 +8,7 @@ import type { PrismaService } from '../prisma/prisma.service.js';
 import type { InstallationHandler } from './installation.handler.js';
 import type { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import type { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
+import type { DeploymentStatusEventsHandler } from './deployment-status-events.handler.js';
 import { WebhookEventsProcessor } from './webhook-events.processor.js';
 
 const jobFor = (webhookEventId: string) =>
@@ -23,6 +24,7 @@ describe('WebhookEventsProcessor', () => {
     { handle } as unknown as InstallationHandler,
     { handle: prHandle } as unknown as PullRequestEventsHandler,
     { handle: prHandle } as unknown as WorkflowRunEventsHandler,
+    { handle: prHandle } as unknown as DeploymentStatusEventsHandler,
   );
 
   beforeEach(() => {

@@ -4,13 +4,15 @@ import { JOBS, QUEUES, type BackfillRepositoryJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { DeploymentsImporter } from './deployments.importer.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
 import { WorkflowRunsImporter } from './workflow-runs.importer.js';
 
 /** Profondeur de l'import initial (docs/01-PRD.md, F2). */
 export const BACKFILL_DAYS = 90;
 
-export type BackfillResult = { skipped: string } | { pullRequests: number; workflowRuns: number };
+export type BackfillResult =
+  { skipped: string } | { pullRequests: number; workflowRuns: number; deployments: number };
 
 /** backfill-repository : import des 90 derniers jours d'un dépôt suivi, suivi dans sync_jobs. */
 @Processor(QUEUES.sync)
@@ -22,6 +24,7 @@ export class BackfillProcessor extends WorkerHost {
     private readonly github: GithubService,
     private readonly pullRequests: PullRequestsImporter,
     private readonly workflowRuns: WorkflowRunsImporter,
+    private readonly deployments: DeploymentsImporter,
   ) {
     super();
   }
@@ -63,13 +66,16 @@ export class BackfillProcessor extends WorkerHost {
       const target = { id: repo.id, owner, name: repo.name };
       const pullRequests = await this.pullRequests.import(octokit, target, since);
       const workflowRuns = await this.workflowRuns.import(octokit, target, since);
+      const deployments = await this.deployments.import(octokit, target, since);
 
       await this.prisma.client.syncJob.update({
         where: { id: syncJob.id },
         data: { status: 'succeeded', finishedAt: new Date() },
       });
-      this.logger.log(`Dépôt ${repo.id} importé : ${pullRequests} PR, ${workflowRuns} runs`);
-      return { pullRequests, workflowRuns };
+      this.logger.log(
+        `Dépôt ${repo.id} importé : ${pullRequests} PR, ${workflowRuns} runs, ${deployments} déploiements`,
+      );
+      return { pullRequests, workflowRuns, deployments };
     } catch (error) {
       await this.prisma.client.syncJob.update({
         where: { id: syncJob.id },

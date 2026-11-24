@@ -1,4 +1,4 @@
-import type { PullRequestState, ReviewState } from '@xcadence/db';
+import type { DeploymentStatus, PullRequestState, ReviewState } from '@xcadence/db';
 
 /** Champs utilisés d'une PR de l'API GitHub (pulls.get). */
 export interface GithubPullRequest {
@@ -108,5 +108,47 @@ export function workflowRunData(run: GithubWorkflowRun) {
     startedAt: new Date(run.run_started_at ?? run.created_at),
     // Fin du run : dernière mise à jour une fois terminé ; null tant qu'il tourne.
     completedAt: run.status === 'completed' ? new Date(run.updated_at) : null,
+  };
+}
+
+/** Champs utilisés d'un déploiement et de son dernier statut (repos.listDeployments, listDeploymentStatuses). */
+export interface GithubDeployment {
+  id: number;
+  sha: string;
+  environment: string;
+  created_at: string;
+}
+
+export interface GithubDeploymentStatus {
+  state: string;
+  created_at: string;
+}
+
+const DEPLOYMENT_STATES: readonly DeploymentStatus[] = [
+  'pending',
+  'queued',
+  'in_progress',
+  'success',
+  'failure',
+  'error',
+  'inactive',
+];
+const FINAL_STATES: readonly DeploymentStatus[] = ['success', 'failure', 'error', 'inactive'];
+
+export function deploymentStatus(state: string | undefined): DeploymentStatus {
+  const value = state?.toLowerCase() as DeploymentStatus | undefined;
+  return value && DEPLOYMENT_STATES.includes(value) ? value : 'pending';
+}
+
+/** Données d'un déploiement pour la table deployments (métriques DORA). */
+export function deploymentData(deployment: GithubDeployment, latest?: GithubDeploymentStatus) {
+  const status = deploymentStatus(latest?.state);
+  return {
+    sha: deployment.sha,
+    environment: deployment.environment,
+    status,
+    createdAt: new Date(deployment.created_at),
+    // Fin : date du dernier statut une fois le déploiement terminé.
+    finishedAt: latest && FINAL_STATES.includes(status) ? new Date(latest.created_at) : null,
   };
 }

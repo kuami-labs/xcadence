@@ -4,6 +4,7 @@ import type { Job } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BackfillProcessor } from './backfill.processor.js';
+import { DeploymentsImporter } from './deployments.importer.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
 import { WorkflowRunsImporter } from './workflow-runs.importer.js';
 
@@ -59,9 +60,25 @@ function fakeOctokit(base: number) {
       updated_at: daysAgo(1),
     },
   ];
+  // Du plus récent au plus ancien ; le dernier a plus de 90 jours.
+  const deployments = [
+    { id: base + 301, sha: 'abc', environment: 'production', created_at: daysAgo(1) },
+    { id: base + 302, sha: 'def', environment: 'production', created_at: daysAgo(4) },
+    { id: base + 303, sha: 'old', environment: 'production', created_at: daysAgo(100) },
+  ];
+  const statusesOf: Record<number, unknown[]> = {
+    [base + 301]: [{ state: 'in_progress', created_at: daysAgo(1) }],
+    [base + 302]: [{ state: 'failure', created_at: daysAgo(4) }],
+  };
   const rest = {
     actions: { listWorkflowRunsForRepo: vi.fn() },
-    repos: { get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }) },
+    repos: {
+      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }),
+      listDeployments: vi.fn(),
+      listDeploymentStatuses: vi.fn(async ({ deployment_id }: { deployment_id: number }) => ({
+        data: statusesOf[deployment_id] ?? [],
+      })),
+    },
     pulls: {
       list: vi.fn(),
       get: vi.fn(async ({ pull_number }: { pull_number: number }) => ({
@@ -80,6 +97,10 @@ function fakeOctokit(base: number) {
       iterator: vi.fn(async function* (fn: unknown) {
         if (fn === rest.actions.listWorkflowRunsForRepo) {
           yield { data: runs };
+          return;
+        }
+        if (fn === rest.repos.listDeployments) {
+          yield { data: deployments };
           return;
         }
         for (const data of pages) yield { data };
@@ -109,6 +130,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
         BackfillProcessor,
         PullRequestsImporter,
         WorkflowRunsImporter,
+        DeploymentsImporter,
         PrismaService,
         { provide: GithubService, useValue: github },
       ],
@@ -140,6 +162,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
     await expect(processor.process(job(repoId))).resolves.toEqual({
       pullRequests: 2,
       workflowRuns: 2,
+      deployments: 2,
     });
 
     const prs = await prisma.pullRequest.findMany({
@@ -165,6 +188,15 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
       ['feature/x', null, false],
     ]);
 
+    const storedDeployments = await prisma.deployment.findMany({
+      where: { repositoryId: repoId },
+      orderBy: { createdAt: 'asc' },
+    });
+    expect(storedDeployments.map((d) => [d.sha, d.status, d.finishedAt !== null])).toEqual([
+      ['def', 'failure', true],
+      ['abc', 'in_progress', false],
+    ]);
+
     const repo = await prisma.repository.findUniqueOrThrow({ where: { id: repoId } });
     expect(repo.defaultBranch).toBe('main');
     const syncJobs = await prisma.syncJob.findMany({ where: { organizationId: orgId } });
@@ -176,6 +208,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
     expect(await prisma.pullRequest.count({ where: { repositoryId: repoId } })).toBe(2);
     expect(await prisma.review.count({ where: { pullRequest: { repositoryId: repoId } } })).toBe(1);
     expect(await prisma.workflowRun.count({ where: { repositoryId: repoId } })).toBe(2);
+    expect(await prisma.deployment.count({ where: { repositoryId: repoId } })).toBe(2);
   });
 
   it("note l'échec dans sync_jobs et laisse BullMQ réessayer", async () => {

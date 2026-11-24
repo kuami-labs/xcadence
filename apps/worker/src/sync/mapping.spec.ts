@@ -1,4 +1,6 @@
 import {
+  deploymentData,
+  deploymentStatus,
   firstCommitAt,
   firstReviewAt,
   prState,
@@ -103,5 +105,27 @@ describe('conversion GitHub → base', () => {
     expect(
       workflowRunData({ ...run, status: 'in_progress', conclusion: null }).completedAt,
     ).toBeNull();
+  });
+
+  it('convertit un déploiement et son dernier statut', () => {
+    const deployment = {
+      id: 1,
+      sha: 'abc',
+      environment: 'production',
+      created_at: '2026-11-02T09:00:00Z',
+    };
+    expect(
+      deploymentData(deployment, { state: 'success', created_at: '2026-11-02T09:05:00Z' }),
+    ).toEqual({
+      sha: 'abc',
+      environment: 'production',
+      status: 'success',
+      createdAt: new Date('2026-11-02T09:00:00Z'),
+      finishedAt: new Date('2026-11-02T09:05:00Z'),
+    });
+    // Sans statut : en attente, pas de fin.
+    expect(deploymentData(deployment)).toMatchObject({ status: 'pending', finishedAt: null });
+    expect(deploymentStatus('INACTIVE')).toBe('inactive');
+    expect(deploymentStatus('inconnu')).toBe('pending');
   });
 });

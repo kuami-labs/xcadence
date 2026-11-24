@@ -39,29 +39,33 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Endpoints principaux
 
-| Méthode et route                                  | Rôle                                                                |
-| ------------------------------------------------- | ------------------------------------------------------------------- |
-| `GET /auth/github`, `GET /auth/github/callback`   | Connexion                                                           |
-| `GET /auth/me`, `POST /auth/logout`               | Utilisateur connecté et ses organisations ; déconnexion             |
-| `POST /webhooks/github`                           | Réception des événements GitHub                                     |
-| `GET /orgs/:orgId/repositories`                   | Dépôts et statut de suivi                                           |
-| `PATCH /orgs/:orgId/repositories/:id`             | Suivre un dépôt, règle de déploiement                               |
-| `GET /orgs/:orgId/repositories/:id/pull-requests` | PR récentes d'un dépôt (sans auteur)                                |
-| `GET /orgs/:orgId/metrics?repo=&from=&to=`        | Métriques DORA et de flux par semaine                               |
-| `GET /orgs/:orgId/bottlenecks`                    | PR bloquées, jobs de CI lents                                       |
-| `GET /orgs/:orgId/summaries/latest`               | Dernier résumé                                                      |
-| `GET /orgs/:orgId/sync-status`                    | Avancement de l'import                                              |
-| `GET /config`                                     | Réglages publics du front (adresse d'installation de la GitHub App) |
+| Méthode et route                                     | Rôle                                                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------- |
+| `GET /auth/github`, `GET /auth/github/callback`      | Connexion                                                           |
+| `GET /auth/me`, `POST /auth/logout`                  | Utilisateur connecté et ses organisations ; déconnexion             |
+| `POST /webhooks/github`                              | Réception des événements GitHub                                     |
+| `GET /orgs/:orgId/repositories`                      | Dépôts et statut de suivi                                           |
+| `PATCH /orgs/:orgId/repositories/:id`                | Suivre un dépôt, règle de déploiement                               |
+| `GET /orgs/:orgId/repositories/:id/pull-requests`    | PR récentes d'un dépôt (sans auteur)                                |
+| `GET /orgs/:orgId/metrics?repo=&from=&to=`           | Métriques DORA et de flux par semaine                               |
+| `GET /orgs/:orgId/bottlenecks`                       | PR bloquées, jobs de CI lents                                       |
+| `GET /orgs/:orgId/summaries/latest`                  | Dernier résumé                                                      |
+| `GET /orgs/:orgId/sync-status`                       | Avancement de l'import                                              |
+| `GET`, `POST /orgs/:orgId/summary-recipients`        | Destinataires du résumé par email                                   |
+| `DELETE /orgs/:orgId/summary-recipients/:id`         | Retirer un destinataire                                             |
+| `GET`, `POST /summary-recipients/unsubscribe?token=` | Désinscription publique en un clic (lien et RFC 8058, ADR 0005)     |
+| `GET /config`                                        | Réglages publics du front (adresse d'installation de la GitHub App) |
 
 ## Jobs BullMQ
 
-| Job                        | Déclencheur                        | Rôle                                                                               |
-| -------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------- |
-| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs                               |
-| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées                                           |
-| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                                                         |
-| `generate-weekly-summary`  | Lundi 7 h UTC                      | Génère le résumé IA de la semaine écoulée, vérifié, ou un repli sans IA (ADR 0004) |
-| `send-notifications`       | Après le résumé ou une alerte      | Envoie les emails                                                                  |
+| Job                        | Déclencheur                        | Rôle                                                                                 |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs                                 |
+| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées                                             |
+| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                                                           |
+| `generate-weekly-summary`  | Lundi 7 h UTC                      | Génère le résumé IA de la semaine écoulée, vérifié, ou un repli sans IA (ADR 0004)   |
+| `send-notifications`       | Après chaque résumé écrit          | Crée un `send-summary-email` par destinataire, une seule fois (`sent_at`)            |
+| `send-summary-email`       | `send-notifications`               | Envoie un email par SMTP (Mailpit en dev, Resend en production : ADR 0005), 3 essais |
 
 ## Sécurité
 

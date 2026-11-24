@@ -10,6 +10,7 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
 import { RepositoriesModule } from './repositories/repositories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { ConfigController } from './config.controller.js';
+import { RecipientsModule } from './recipients/recipients.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ConfigController } from './config.controller.js';
     WebhooksModule,
     RepositoriesModule,
     DashboardModule,
+    RecipientsModule,
   ],
   controllers: [HealthController, ConfigController],
 })

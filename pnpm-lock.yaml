@@ -388,6 +388,9 @@ importers:
       ioredis:
         specifier: ^6.0.0
         version: 6.0.0(supports-color@7.2.0)
+      nodemailer:
+        specifier: ^10.6.1
+        version: 10.6.1
       octokit:
         specifier: ^5.0.5
         version: 5.0.5
@@ -407,6 +410,9 @@ importers:
       '@nestjs/testing':
         specifier: ^12.0.1
         version: 12.6.0(@nestjs/common@12.6.0(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(@nestjs/core@12.6.0)(@nestjs/platform-express@12.6.0)
+      '@types/nodemailer':
+        specifier: ^8.0.2
+        version: 8.0.2
       '@vitest/coverage-v8':
         specifier: ^5.1.1
         version: 5.1.1(vitest@5.1.1)
@@ -2206,6 +2212,9 @@ packages:
 
   '@types/node@26.6.6':
     resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
+
+  '@types/nodemailer@8.0.2':
+    resolution: {integrity: sha512-c7M5ox8p0nEOfbJ2E9Qcmt8/QCu/VzsiAhzBiZbvky2PhKZDHpKB3sQHBM5MEZNkCfBOaS6S9//AGPRTNB7IaA==}
 
   '@types/pg@8.23.1':
     resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
@@ -4326,6 +4335,10 @@ packages:
   node-releases@2.0.65:
     resolution: {integrity: sha512-PfvofsGQ+MiOQIPkX9fU8ELUWmy5zL74CdQaph/ismKszfFkfwXaw0cGiwbwym2hT9k5+mdyl8O5WQ1MD8EHmA==}
     engines: {node: '>=18'}
+
+  nodemailer@10.6.1:
+    resolution: {integrity: sha512-d7kfFfS/tR4Aca+SBvRaQ+MXKNv7d2JiRe5TxaRcFT/kYMh4GGPnW9aKksTIEvyEbA7d/7HYWE4YPDEHxzJj/g==}
+    engines: {node: '>=20.0.0'}
 
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
@@ -7132,6 +7145,10 @@ snapshots:
     dependencies:
       undici-types: 8.9.0
 
+  '@types/nodemailer@8.0.2':
+    dependencies:
+      '@types/node': 26.6.6
+
   '@types/pg@8.23.1':
     dependencies:
       '@types/node': 26.6.6
@@ -9357,6 +9374,8 @@ snapshots:
     optional: true
 
   node-releases@2.0.65: {}
+
+  nodemailer@10.6.1: {}
 
   npm-run-path@4.0.1:
     dependencies:

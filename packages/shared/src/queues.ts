@@ -11,6 +11,8 @@ export const QUEUES = {
   metrics: 'metrics',
   /** Résumé hebdomadaire et alertes. */
   insights: 'insights',
+  /** Envoi des emails (résumé hebdomadaire). */
+  notifications: 'notifications',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
@@ -20,6 +22,8 @@ export const JOBS = {
   backfillRepository: 'backfill-repository',
   recomputeWeeklyMetrics: 'recompute-weekly-metrics',
   generateWeeklySummary: 'generate-weekly-summary',
+  sendNotifications: 'send-notifications',
+  sendSummaryEmail: 'send-summary-email',
 } as const;
 
 /** process-webhook-event : l'événement brut est déjà enregistré dans webhook_events. */
@@ -40,6 +44,17 @@ export interface RecomputeWeeklyMetricsJob {
 /** generate-weekly-summary : une organisation, ou toutes (passage du lundi) si absent. */
 export interface GenerateWeeklySummaryJob {
   organizationId?: string;
+}
+
+/** send-notifications : répartit l'envoi d'un résumé, un job par destinataire. */
+export interface SendNotificationsJob {
+  summaryId: string;
+}
+
+/** send-summary-email : un email, réessayé seul en cas d'échec. */
+export interface SendSummaryEmailJob {
+  summaryId: string;
+  recipientId: string;
 }
 
 /** Options de connexion Redis à partir de REDIS_URL (redis://[user:mot-de-passe@]hôte:port[/base]). */

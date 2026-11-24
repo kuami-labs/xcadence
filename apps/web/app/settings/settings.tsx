@@ -2,10 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RepositoryList } from '@/components/settings/repository-list';
+import { SummaryRecipients } from '@/components/settings/summary-recipients';
 import { SyncStatus } from '@/components/settings/sync-status';
 import { useOrganization } from '@/hooks/use-organization';
 
-/** Paramètres : dépôts suivis et état de l'import. */
+/** Paramètres : dépôts suivis, état de l'import et destinataires du résumé. */
 export function Settings() {
   const { me, orgId, organization } = useOrganization();
   if (me.isPending || me.data === null)
@@ -30,6 +31,17 @@ export function Settings() {
         <CardContent className="space-y-4">
           <SyncStatus orgId={orgId} />
           <RepositoryList orgId={orgId} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Résumé par email</CardTitle>
+          <CardDescription>
+            Le résumé de la semaine part chaque lundi matin à ces adresses.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SummaryRecipients orgId={orgId} />
         </CardContent>
       </Card>
     </main>

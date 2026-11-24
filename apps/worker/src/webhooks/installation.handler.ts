@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { Prisma } from '@xcadence/db';
 import { PrismaService } from '../prisma/prisma.service.js';
+import type { WebhookHandler } from './webhook-handler.js';
 
 interface GithubAccount {
   id: number;
@@ -30,13 +31,14 @@ type Tx = Prisma.TransactionClient;
  * Idempotent : un événement rejoué ne duplique rien (identifiants GitHub uniques).
  */
 @Injectable()
-export class InstallationHandler {
+export class InstallationHandler implements WebhookHandler {
   private readonly logger = new Logger(InstallationHandler.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
   /** Retourne true si l'événement a été traité, false s'il ne concerne pas cette tâche. */
-  async handle(eventType: string, payload: InstallationPayload): Promise<boolean> {
+  async handle(eventType: string, raw: unknown): Promise<boolean> {
+    const payload = raw as InstallationPayload;
     if (
       eventType === 'installation' &&
       ['created', 'new_permissions_accepted', 'unsuspend'].includes(payload.action)

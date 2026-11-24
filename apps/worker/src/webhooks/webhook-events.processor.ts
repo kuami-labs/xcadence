@@ -3,7 +3,9 @@ import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type ProcessWebhookEventJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { InstallationHandler, type InstallationPayload } from './installation.handler.js';
+import { InstallationHandler } from './installation.handler.js';
+import { PullRequestEventsHandler } from './pull-request-events.handler.js';
+import type { WebhookHandler } from './webhook-handler.js';
 
 export type ProcessResult = 'processed' | 'ignored' | 'already-processed' | 'missing';
 
@@ -15,11 +17,15 @@ export type ProcessResult = 'processed' | 'ignored' | 'already-processed' | 'mis
 export class WebhookEventsProcessor extends WorkerHost {
   private readonly logger = new Logger(WebhookEventsProcessor.name);
 
+  private readonly handlers: WebhookHandler[];
+
   constructor(
     private readonly prisma: PrismaService,
-    private readonly installation: InstallationHandler,
+    installation: InstallationHandler,
+    pullRequests: PullRequestEventsHandler,
   ) {
     super();
+    this.handlers = [installation, pullRequests];
   }
 
   async process(job: Job<ProcessWebhookEventJob>): Promise<ProcessResult> {
@@ -38,12 +44,15 @@ export class WebhookEventsProcessor extends WorkerHost {
     }
 
     // Jamais le payload dans les logs (docs/08-SECURITE.md) : seulement le type et l'identifiant.
-    const handled = await this.installation.handle(
-      event.eventType,
-      event.payload as unknown as InstallationPayload,
-    );
+    let handled = false;
+    for (const handler of this.handlers) {
+      if (await handler.handle(event.eventType, event.payload)) {
+        handled = true;
+        break;
+      }
+    }
     if (!handled) {
-      // Pas encore géré (#15, #21 à #23) : laissé non traité pour l'être plus tard.
+      // Pas encore géré (#22, #23) : laissé non traité pour l'être plus tard.
       this.logger.log(`Événement ${event.eventType} ${event.id} ignoré pour l'instant`);
       return 'ignored';
     }

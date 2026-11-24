@@ -10,5 +10,6 @@ import { WorkflowRunsImporter } from './workflow-runs.importer.js';
 @Module({
   imports: [GithubModule, BullModule.registerQueue({ name: QUEUES.sync })],
   providers: [BackfillProcessor, PullRequestsImporter, WorkflowRunsImporter, DeploymentsImporter],
+  exports: [PullRequestsImporter],
 })
 export class SyncModule {}

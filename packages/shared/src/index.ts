@@ -2,3 +2,5 @@
 export interface HealthResponse {
   status: 'ok';
 }
+
+export * from './queues.js';

@@ -1,4 +1,4 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { InjectQueue, Processor } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
 import {
   JOBS,
@@ -10,6 +10,7 @@ import type { Job, Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MAILER, type Mailer } from './mailer.js';
 import { summaryEmail } from './summary-email.js';
+import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
 
 type NotificationJob = SendNotificationsJob | SendSummaryEmailJob;
 
@@ -25,7 +26,7 @@ export const EMAIL_JOB_OPTIONS = {
  * (weekly_summaries.sent_at). send-summary-email : envoie un email.
  */
 @Processor(QUEUES.notifications)
-export class NotificationsProcessor extends WorkerHost {
+export class NotificationsProcessor extends ReportedWorkerHost {
   private readonly logger = new Logger(NotificationsProcessor.name);
 
   constructor(

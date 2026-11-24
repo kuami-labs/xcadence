@@ -18,7 +18,7 @@ La stack reprend les compétences existantes (TypeScript, NestJS, Next.js, Postg
 | Emails               | Resend ou SMTP (Mailpit en local)                                   | Résumé hebdomadaire et alertes                                                           |
 | Tests                | Vitest + Supertest, Playwright pour 2 parcours                      | Calculs de métriques couverts à 100 %                                                    |
 | CI/CD et déploiement | GitHub Actions, Docker Compose, Coolify sur un VPS                  | Outils déjà maîtrisés                                                                    |
-| Observabilité        | Logs structurés (pino), Sentry                                      | Comprendre un import qui échoue                                                          |
+| Observabilité        | Logs JSON (nestjs-pino), Sentry optionnel (`SENTRY_DSN`)            | Comprendre un import qui échoue                                                          |
 
 ## Structure du monorepo
 

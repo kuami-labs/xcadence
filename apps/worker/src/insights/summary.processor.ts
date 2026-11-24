@@ -1,4 +1,4 @@
-import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
+import { InjectQueue, Processor } from '@nestjs/bullmq';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import {
   JOBS,
@@ -12,6 +12,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { buildFacts } from './facts.js';
 import { createSummaryProvider, type SummaryProvider } from './summary-provider.js';
 import { fallbackSummary, validateSummary } from './validate.js';
+import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
 
 /** Lundi 7 h UTC, après le recalcul nocturne des métriques (3 h). */
 export const WEEKLY_SUMMARY_PATTERN = '0 7 * * 1';
@@ -27,7 +28,7 @@ export type SummaryOutcome = 'written' | 'fallback' | 'exists' | 'no-data';
  * d'être enregistrée, sinon un résumé de repli sans IA est écrit.
  */
 @Processor(QUEUES.insights)
-export class SummaryProcessor extends WorkerHost implements OnModuleInit {
+export class SummaryProcessor extends ReportedWorkerHost implements OnModuleInit {
   private readonly logger = new Logger(SummaryProcessor.name);
 
   constructor(

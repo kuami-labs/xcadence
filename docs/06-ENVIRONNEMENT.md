@@ -155,6 +155,10 @@ services:
     # Les commandes « docker compose exec dev … » tournent comme dans VS Code
     user: node
     working_dir: /workspace
+    # web et API joignables depuis la machine hôte (navigateur), même sans VS Code
+    ports:
+      - 127.0.0.1:3000:3000
+      - 127.0.0.1:4000:4000
     volumes:
       - .:/workspace:cached
     depends_on:
@@ -310,7 +314,7 @@ Chaque contributeur crée **sa propre** GitHub App de test (avec Claude Desktop 
 | PostgreSQL | `psql $DATABASE_URL`    | TablePlus, DBeaver : `127.0.0.1:5432`, `xcadence` / `xcadence` |
 | Mailpit    | `mailpit:1025` (SMTP)   | `http://localhost:8025`                                        |
 
-Si un port est déjà pris sur votre machine, VS Code en choisit un autre : voyez l'onglet **Ports**.
+Web et API sont publiés sur `127.0.0.1` par `compose.yaml` : ils sont joignables depuis le navigateur même sans VS Code (Claude Desktop en session WSL). Si un port est déjà pris sur votre machine, changez le port de gauche dans `compose.yaml`.
 
 ## pnpm
 

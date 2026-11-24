@@ -6,13 +6,18 @@ import {
   Post,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
 import { isValidSignature } from './signature.js';
 import { WebhooksService } from './webhooks.service.js';
 
 @Controller('webhooks')
+@UseGuards(ThrottlerGuard)
+// GitHub peut envoyer des rafales d'événements : limite plus large que pour /auth.
+@Throttle({ default: { limit: 300, ttl: 60_000 } })
 export class WebhooksController {
   constructor(private readonly webhooks: WebhooksService) {}
 

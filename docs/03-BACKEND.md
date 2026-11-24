@@ -39,16 +39,17 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Endpoints principaux
 
-| Méthode et route                                | Rôle                                  |
-| ----------------------------------------------- | ------------------------------------- |
-| `GET /auth/github`, `GET /auth/github/callback` | Connexion                             |
-| `POST /webhooks/github`                         | Réception des événements GitHub       |
-| `GET /orgs/:orgId/repositories`                 | Dépôts et statut de suivi             |
-| `PATCH /orgs/:orgId/repositories/:id`           | Suivre un dépôt, règle de déploiement |
-| `GET /orgs/:orgId/metrics?repo=&from=&to=`      | Métriques DORA et de flux par semaine |
-| `GET /orgs/:orgId/bottlenecks`                  | PR bloquées, jobs de CI lents         |
-| `GET /orgs/:orgId/summaries/latest`             | Dernier résumé                        |
-| `GET /orgs/:orgId/sync-status`                  | Avancement de l'import                |
+| Méthode et route                                | Rôle                                                    |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `GET /auth/github`, `GET /auth/github/callback` | Connexion                                               |
+| `GET /auth/me`, `POST /auth/logout`             | Utilisateur connecté et ses organisations ; déconnexion |
+| `POST /webhooks/github`                         | Réception des événements GitHub                         |
+| `GET /orgs/:orgId/repositories`                 | Dépôts et statut de suivi                               |
+| `PATCH /orgs/:orgId/repositories/:id`           | Suivre un dépôt, règle de déploiement                   |
+| `GET /orgs/:orgId/metrics?repo=&from=&to=`      | Métriques DORA et de flux par semaine                   |
+| `GET /orgs/:orgId/bottlenecks`                  | PR bloquées, jobs de CI lents                           |
+| `GET /orgs/:orgId/summaries/latest`             | Dernier résumé                                          |
+| `GET /orgs/:orgId/sync-status`                  | Avancement de l'import                                  |
 
 ## Jobs BullMQ
 

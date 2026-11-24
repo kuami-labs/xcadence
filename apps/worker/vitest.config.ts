@@ -8,5 +8,12 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    // Calculs de métriques couverts à 100 % (docs/02-STACK.md) : vérifié à chaque `pnpm test`.
+    coverage: {
+      enabled: true,
+      include: ['src/metrics/**/*.ts'],
+      exclude: ['**/*.spec.ts'],
+      thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
+    },
   },
 });

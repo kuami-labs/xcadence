@@ -6,3 +6,4 @@ export interface HealthResponse {
 export * from './queues.js';
 export * from './repositories.js';
 export * from './metrics.js';
+export * from './dashboard.js';

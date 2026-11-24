@@ -1,13 +1,12 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
 import { DashboardFilters, PERIOD_OPTIONS } from '@/components/dashboard/filters';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TrendChart } from '@/components/dashboard/trend-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useMetrics, useRepositories } from '@/hooks/use-dashboard';
-import { useMe } from '@/hooks/use-me';
+import { useOrganization } from '@/hooks/use-organization';
 import { DORA_CARDS, periods } from '@/lib/metrics/summary';
 
 /** Vue d'ensemble (F3) : 4 cartes DORA avec tendance et courbes sur 12 semaines. */
@@ -15,12 +14,11 @@ export function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const me = useMe();
+  const { me, orgId, organization } = useOrganization();
 
   const weeksParam = Number(params.get('semaines'));
   const weeks = (PERIOD_OPTIONS as readonly number[]).includes(weeksParam) ? weeksParam : 4;
   const repo = params.get('depot');
-  const orgId = params.get('org') ?? me.data?.organizations[0]?.id;
 
   // Période affichée et précédente (tendance), plus 12 semaines pour les courbes.
   const { current, previous } = periods(weeks);
@@ -28,10 +26,6 @@ export function Dashboard() {
   const from = [previous.from, chartPeriod.from].sort()[0];
   const metrics = useMetrics(orgId, repo, from, current.to);
   const repositories = useRepositories(orgId);
-
-  useEffect(() => {
-    if (me.data === null) router.replace('/login');
-  }, [me.data, router]);
 
   const setFilters = (next: { weeks?: number; repo?: string | null }) => {
     const query = new URLSearchParams(params);
@@ -63,8 +57,7 @@ export function Dashboard() {
         <div>
           <h1 className="text-2xl font-semibold">Tableau de bord</h1>
           <p className="text-muted-foreground">
-            {me.data.organizations.find((o) => o.id === orgId)?.name} · connecté en tant que{' '}
-            {me.data.user.login}
+            {organization?.name} · connecté en tant que {me.data.user.login}
           </p>
         </div>
         <DashboardFilters

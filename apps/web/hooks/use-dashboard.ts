@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import type { MetricsResponse, RepositoryView } from '@xcadence/shared';
+import type { BottlenecksResponse, MetricsResponse, RepositoryView } from '@xcadence/shared';
 import { apiFetch } from '@/lib/api/client';
 
 /** Métriques hebdomadaires d'une organisation (ou d'un dépôt) sur une période. */
@@ -25,6 +25,15 @@ export function useRepositories(orgId: string | undefined) {
   return useQuery({
     queryKey: ['repositories', orgId],
     queryFn: () => apiFetch<RepositoryView[]>(`/orgs/${orgId}/repositories`),
+    enabled: Boolean(orgId),
+  });
+}
+
+/** Goulots d'une organisation (F4). */
+export function useBottlenecks(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ['bottlenecks', orgId],
+    queryFn: () => apiFetch<BottlenecksResponse>(`/orgs/${orgId}/bottlenecks`),
     enabled: Boolean(orgId),
   });
 }

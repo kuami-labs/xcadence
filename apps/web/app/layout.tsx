@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { Suspense } from 'react';
+import { AppNav } from '@/components/app-nav';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -22,7 +24,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Suspense>
+            <AppNav />
+          </Suspense>
+          {children}
+        </Providers>
       </body>
     </html>
   );

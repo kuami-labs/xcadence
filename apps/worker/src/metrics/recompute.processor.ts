@@ -50,6 +50,7 @@ export class RecomputeProcessor extends ReportedWorkerHost {
       select: {
         id: true,
         defaultBranch: true,
+        deployRule: true,
         pullRequests: {
           select: {
             isDraft: true,

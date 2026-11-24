@@ -19,6 +19,10 @@ La base compte 14 tables en trois groupes : les comptes, les données brutes cop
 | `sync_jobs`          | Technique | id, organization_id, type (backfill, webhook, recompute), status, started_at, finished_at, error                                                                 | Suivi des imports                                                   |
 | `webhook_events`     | Technique | id, delivery_id (unique), event_type, payload (jsonb), received_at, processed_at                                                                                 | Reçus bruts, traités une seule fois                                 |
 
+## Règle de déploiement (`repositories.deploy_rule`)
+
+JSON `{ "productionEnvironments": ["Production – ui"] }` : les environnements GitHub comptés comme production pour ce dépôt, comparés sans tenir compte de la casse (10 au plus). `null` : règle par défaut, `production` ou `prod`. Le format laisse de la place à d'autres sources (workflow, tag) pour les équipes sans API Deployments.
+
 ## Relations
 
 ```mermaid

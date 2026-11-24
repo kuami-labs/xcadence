@@ -1,4 +1,9 @@
-import { METRIC_KEYS, type MetricKey } from '@xcadence/shared';
+import {
+  METRIC_KEYS,
+  isProductionEnvironment,
+  type DeployRule,
+  type MetricKey,
+} from '@xcadence/shared';
 import { HOUR_MS, byWeek, groupByWeek, median, toValues, type MetricPoint } from './stats.js';
 
 export interface DoraDeployment {
@@ -18,9 +23,12 @@ export interface DoraPullRequest {
 /** Fenêtre d'un rollback : redéployer un ancien commit sous 48 h annule le changement précédent. */
 export const ROLLBACK_WINDOW_MS = 48 * HOUR_MS;
 
-/** Environnement de production : `production` ou `prod` (la règle par dépôt viendra avec deploy_rule). */
-export function isProduction(environment: string): boolean {
-  return /^prod(uction)?$/i.test(environment.trim());
+/**
+ * Environnement de production : ceux de la règle du dépôt (deploy_rule), sinon `production`
+ * ou `prod`.
+ */
+export function isProduction(environment: string, rule: DeployRule | null = null): boolean {
+  return isProductionEnvironment(environment, rule);
 }
 
 /** `inactive` : réussi puis remplacé par un déploiement plus récent (GitHub). */
@@ -34,9 +42,11 @@ interface Change {
 }
 
 /** Déploiements de production terminés (réussis ou en échec), dans l'ordre chronologique. */
-function productionChanges(deployments: DoraDeployment[]): Change[] {
+function productionChanges(deployments: DoraDeployment[], rule: DeployRule | null): Change[] {
   return deployments
-    .filter((d) => isProduction(d.environment) && (SUCCEEDED.has(d.status) || FAILED.has(d.status)))
+    .filter(
+      (d) => isProduction(d.environment, rule) && (SUCCEEDED.has(d.status) || FAILED.has(d.status)),
+    )
     .map((d) => ({
       sha: d.sha,
       at: d.finishedAt ?? d.createdAt,
@@ -83,8 +93,12 @@ export interface Sample {
  * (association PR → déploiement, rollbacks, rétablissements). Pour une organisation, on réunit
  * ensuite les mesures de chaque dépôt.
  */
-export function doraSamples(prs: DoraPullRequest[], deployments: DoraDeployment[]) {
-  const changes = productionChanges(deployments);
+export function doraSamples(
+  prs: DoraPullRequest[],
+  deployments: DoraDeployment[],
+  rule: DeployRule | null = null,
+) {
+  const changes = productionChanges(deployments, rule);
   const shipped = changes.filter((c) => c.succeeded);
   const failed = failures(changes);
   const failedChanges = new Set(failed.map((f) => f.change));

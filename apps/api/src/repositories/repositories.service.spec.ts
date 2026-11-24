@@ -10,6 +10,7 @@ describe('RepositoriesService', () => {
   const update = vi.fn().mockResolvedValue({ id: 'r1', isTracked: true });
   const add = vi.fn();
   const getJob = vi.fn();
+  const recompute = vi.fn();
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -18,6 +19,7 @@ describe('RepositoriesService', () => {
         RepositoriesService,
         { provide: PrismaService, useValue: { client: { repository: { findFirst, update } } } },
         { provide: getQueueToken(QUEUES.sync), useValue: { add, getJob } },
+        { provide: getQueueToken(QUEUES.metrics), useValue: { add: recompute } },
       ],
     }).compile();
     service = module.get(RepositoriesService);
@@ -56,5 +58,21 @@ describe('RepositoriesService', () => {
     findFirst.mockResolvedValue({ isTracked: true });
     await service.update('o1', 'r1', { isTracked: false });
     expect(add).not.toHaveBeenCalled();
+  });
+
+  it('ne recalcule les métriques que si la règle de déploiement change', async () => {
+    findFirst.mockResolvedValue({
+      isTracked: true,
+      deployRule: { productionEnvironments: ['production'] },
+    });
+    await service.update('o1', 'r1', { isTracked: true });
+    await service.update('o1', 'r1', { deployRule: { productionEnvironments: ['production'] } });
+    expect(recompute).not.toHaveBeenCalled();
+    await service.update('o1', 'r1', { deployRule: null });
+    expect(recompute).toHaveBeenCalledWith(
+      JOBS.recomputeWeeklyMetrics,
+      { organizationId: 'o1' },
+      expect.objectContaining({ deduplication: { id: 'recompute-o1' } }),
+    );
   });
 });

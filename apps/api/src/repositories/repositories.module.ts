@@ -6,7 +6,7 @@ import { RepositoriesController } from './repositories.controller.js';
 import { RepositoriesService } from './repositories.service.js';
 
 @Module({
-  imports: [AuthModule, BullModule.registerQueue({ name: QUEUES.sync })],
+  imports: [AuthModule, BullModule.registerQueue({ name: QUEUES.sync }, { name: QUEUES.metrics })],
   controllers: [RepositoriesController],
   providers: [RepositoriesService],
 })

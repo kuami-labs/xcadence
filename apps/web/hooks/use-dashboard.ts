@@ -5,7 +5,9 @@ import type {
   BottlenecksResponse,
   MetricsResponse,
   PublicConfigResponse,
+  DeployRule,
   RecentPullRequest,
+  RepositoryEnvironment,
   RepositoryView,
   SummaryRecipientView,
   SyncStatusResponse,
@@ -142,5 +144,34 @@ export function useRemoveSummaryRecipient(orgId: string | undefined) {
     mutationFn: (id: string) =>
       apiFetch<void>(`/orgs/${orgId}/summary-recipients/${id}`, { method: 'DELETE' }),
     onSuccess: () => client.invalidateQueries({ queryKey: ['summary-recipients', orgId] }),
+  });
+}
+
+/** Environnements vus dans les déploiements d'un dépôt, avec leur statut de production. */
+export function useRepositoryEnvironments(orgId: string | undefined, repositoryId: string) {
+  return useQuery({
+    queryKey: ['environments', orgId, repositoryId],
+    queryFn: () =>
+      apiFetch<RepositoryEnvironment[]>(`/orgs/${orgId}/repositories/${repositoryId}/environments`),
+    enabled: Boolean(orgId),
+  });
+}
+
+/** Enregistre les environnements de production d'un dépôt (null : règle par défaut). */
+export function useUpdateDeployRule(orgId: string | undefined, repositoryId: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (deployRule: DeployRule | null) =>
+      apiFetch<RepositoryView>(`/orgs/${orgId}/repositories/${repositoryId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ deployRule }),
+      }),
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: ['repositories', orgId] });
+      void client.invalidateQueries({ queryKey: ['environments', orgId, repositoryId] });
+      // Le recalcul des métriques part aussitôt : les cartes se rafraîchiront.
+      void client.invalidateQueries({ queryKey: ['metrics', orgId] });
+    },
   });
 }

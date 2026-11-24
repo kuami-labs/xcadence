@@ -82,11 +82,72 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
       const res = await api()
         .patch(`/orgs/${orgId}/repositories/${repoId}`)
         .set('cookie', cookie())
-        .send({ isTracked: true, deployRule: { source: 'deployments' } })
+        .send({ isTracked: true })
         .expect(200);
-      expect(res.body).toMatchObject({ isTracked: true, deployRule: { source: 'deployments' } });
+      expect(res.body).toMatchObject({ isTracked: true, deployRule: null });
       const job = await sync.getJob(`backfill-${repoId}`);
       expect(job?.data).toEqual({ repositoryId: repoId });
+    });
+
+    it('choisit les environnements de production du dépôt et recalcule les métriques', async () => {
+      const deployment = (n: bigint, environment: string) => ({
+        repositoryId: repoId,
+        githubDeploymentId: base * 10n + n,
+        sha: 'a',
+        environment,
+        status: 'success' as const,
+        createdAt: new Date('2026-11-23T10:00:00Z'),
+      });
+      await prisma.deployment.createMany({
+        data: [
+          deployment(1n, 'Production – ui'),
+          deployment(2n, 'Production – ui'),
+          deployment(3n, 'Preview – ui'),
+          deployment(4n, 'production'),
+        ],
+      });
+      const environments = () =>
+        api().get(`/orgs/${orgId}/repositories/${repoId}/environments`).set('cookie', cookie());
+      expect((await environments().expect(200)).body).toEqual([
+        { name: 'Production – ui', deployments: 2, isProduction: false },
+        { name: 'Preview – ui', deployments: 1, isProduction: false },
+        { name: 'production', deployments: 1, isProduction: true },
+      ]);
+
+      const patch = (deployRule: unknown) =>
+        api()
+          .patch(`/orgs/${orgId}/repositories/${repoId}`)
+          .set('cookie', cookie())
+          .send({ deployRule });
+      const res = await patch({
+        productionEnvironments: [' Production – ui ', 'Production – ui'],
+      }).expect(200);
+      expect(res.body.deployRule).toEqual({ productionEnvironments: ['Production – ui'] });
+      expect(
+        (await environments().expect(200)).body.map(
+          (e: { isProduction: boolean }) => e.isProduction,
+        ),
+      ).toEqual([true, false, false]);
+      const metrics = app.get<Queue>(getQueueToken(QUEUES.metrics));
+      const jobId = await metrics.getDeduplicationJobId(`recompute-${orgId}`);
+      expect(jobId).toBeTruthy();
+
+      // Règles refusées : vide, trop longue, mauvais type, champ inconnu.
+      await patch({ productionEnvironments: [] }).expect(400);
+      await patch({ productionEnvironments: [''] }).expect(400);
+      await patch({ productionEnvironments: ['x'.repeat(101)] }).expect(400);
+      await patch({ productionEnvironments: Array.from({ length: 11 }, (_, i) => `e${i}`) }).expect(
+        400,
+      );
+      await patch({ productionEnvironments: 'Production – ui' }).expect(400);
+      await patch({ productionEnvironments: ['p'], source: 'workflow' }).expect(400);
+
+      // null : retour à la règle par défaut.
+      expect((await patch(null).expect(200)).body.deployRule).toBeNull();
+      await api()
+        .get(`/orgs/${orgId}/repositories/${otherRepoId}/environments`)
+        .set('cookie', cookie())
+        .expect(404);
     });
 
     it('valide les entrées et refuse les champs inconnus', async () => {

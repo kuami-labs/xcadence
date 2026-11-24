@@ -1,3 +1,4 @@
+import { parseDeployRule } from '@xcadence/shared';
 import { doraMetrics, doraSamples, type DoraDeployment, type DoraSamples } from './dora-metrics.js';
 import { ciDuration, prLifetime, timeToFirstReview, type FlowWorkflowRun } from './flow-metrics.js';
 import type { MetricPoint } from './stats.js';
@@ -6,6 +7,8 @@ import type { MetricPoint } from './stats.js';
 export interface RepositoryData {
   id: string;
   defaultBranch: string | null;
+  /** deploy_rule tel que stocké (JSON) ; absent ou invalide = règle par défaut. */
+  deployRule?: unknown;
   pullRequests: {
     isDraft: boolean;
     createdAt: Date;
@@ -48,7 +51,9 @@ const onMainBranch = (repo: RepositoryData): FlowWorkflowRun[] =>
  * (données des dépôts réunies). Aucune métrique par développeur.
  */
 export function organizationMetrics(repos: RepositoryData[]): MetricRow[] {
-  const samples = repos.map((repo) => doraSamples(repo.pullRequests, repo.deployments));
+  const samples = repos.map((repo) =>
+    doraSamples(repo.pullRequests, repo.deployments, parseDeployRule(repo.deployRule)),
+  );
   const perRepo = repos.flatMap((repo, i) =>
     metricsOf(repo.pullRequests, onMainBranch(repo), samples[i]).map((p) => ({
       ...p,

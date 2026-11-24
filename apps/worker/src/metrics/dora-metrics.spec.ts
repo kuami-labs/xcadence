@@ -3,6 +3,7 @@ import {
   changeFailureRate,
   deploymentFrequency,
   isProduction,
+  doraSamples,
   leadTime,
   timeToRestore,
 } from './dora-metrics.js';
@@ -43,6 +44,21 @@ describe('métriques DORA', () => {
     expect(isProduction(' Prod ')).toBe(true);
     expect(isProduction('staging')).toBe(false);
     expect(isProduction('preproduction')).toBe(false);
+    // Vercel : ignoré par défaut, reconnu quand la règle du dépôt le désigne.
+    expect(isProduction('Production – ui')).toBe(false);
+    const rule = { productionEnvironments: ['Production – ui'] };
+    expect(isProduction('production – UI ', rule)).toBe(true);
+    expect(isProduction('production', rule)).toBe(false);
+  });
+
+  it('applique la règle du dépôt à toutes les métriques DORA', () => {
+    // Mêmes déploiements, la production nommée à la façon de Vercel (staging inchangé).
+    const vercel = deployments.map((d) =>
+      d.environment === 'production' ? { ...d, environment: 'Production – ui' } : d,
+    );
+    expect(doraSamples([], vercel).deployments).toEqual([]);
+    const rule = { productionEnvironments: ['Production – ui'] };
+    expect(doraSamples([], vercel, rule)).toEqual(doraSamples([], deployments));
   });
 
   it('fréquence : déploiements réussis en production', () => {

@@ -5,11 +5,12 @@ import type { Job } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
+import { WorkflowRunsImporter } from './workflow-runs.importer.js';
 
 /** Profondeur de l'import initial (docs/01-PRD.md, F2). */
 export const BACKFILL_DAYS = 90;
 
-export type BackfillResult = { skipped: string } | { pullRequests: number };
+export type BackfillResult = { skipped: string } | { pullRequests: number; workflowRuns: number };
 
 /** backfill-repository : import des 90 derniers jours d'un dépôt suivi, suivi dans sync_jobs. */
 @Processor(QUEUES.sync)
@@ -20,6 +21,7 @@ export class BackfillProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly github: GithubService,
     private readonly pullRequests: PullRequestsImporter,
+    private readonly workflowRuns: WorkflowRunsImporter,
   ) {
     super();
   }
@@ -58,18 +60,16 @@ export class BackfillProcessor extends WorkerHost {
       });
 
       const since = new Date(Date.now() - BACKFILL_DAYS * 24 * 60 * 60 * 1000);
-      const pullRequests = await this.pullRequests.import(
-        octokit,
-        { id: repo.id, owner, name: repo.name },
-        since,
-      );
+      const target = { id: repo.id, owner, name: repo.name };
+      const pullRequests = await this.pullRequests.import(octokit, target, since);
+      const workflowRuns = await this.workflowRuns.import(octokit, target, since);
 
       await this.prisma.client.syncJob.update({
         where: { id: syncJob.id },
         data: { status: 'succeeded', finishedAt: new Date() },
       });
-      this.logger.log(`Dépôt ${repo.id} importé : ${pullRequests} PR`);
-      return { pullRequests };
+      this.logger.log(`Dépôt ${repo.id} importé : ${pullRequests} PR, ${workflowRuns} runs`);
+      return { pullRequests, workflowRuns };
     } catch (error) {
       await this.prisma.client.syncJob.update({
         where: { id: syncJob.id },

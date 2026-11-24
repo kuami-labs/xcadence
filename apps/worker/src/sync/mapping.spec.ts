@@ -1,4 +1,11 @@
-import { firstCommitAt, firstReviewAt, prState, pullRequestData, reviewState } from './mapping.js';
+import {
+  firstCommitAt,
+  firstReviewAt,
+  prState,
+  pullRequestData,
+  reviewState,
+  workflowRunData,
+} from './mapping.js';
 
 const author = { id: 1, login: 'auteur' };
 const pr = {
@@ -73,5 +80,28 @@ describe('conversion GitHub → base', () => {
       additions: 40,
       deletions: 5,
     });
+  });
+
+  it('convertit un run de CI, terminé ou en cours', () => {
+    const run = {
+      id: 1,
+      name: 'CI',
+      head_branch: 'main',
+      status: 'completed',
+      conclusion: 'failure',
+      created_at: '2026-11-02T09:00:00Z',
+      updated_at: '2026-11-02T09:12:00Z',
+      run_started_at: '2026-11-02T09:01:00Z',
+    };
+    expect(workflowRunData(run)).toEqual({
+      workflowName: 'CI',
+      branch: 'main',
+      conclusion: 'failure',
+      startedAt: new Date('2026-11-02T09:01:00Z'),
+      completedAt: new Date('2026-11-02T09:12:00Z'),
+    });
+    expect(
+      workflowRunData({ ...run, status: 'in_progress', conclusion: null }).completedAt,
+    ).toBeNull();
   });
 });

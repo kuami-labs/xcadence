@@ -37,7 +37,7 @@ model Organization {
   githubOrgId    BigInt             @unique @map("github_org_id")
   name           String
   installationId BigInt?            @unique @map("installation_id")
-  /// Organisation de démo publique (github_org_id = 0) : dépôts publics de tiers, lecture seule.
+  /// Démo publique en lecture seule : une de nos organisations où l'App est installée (CLI demo:enable).
   isDemo         Boolean            @default(false) @map("is_demo")
   createdAt      DateTime           @default(now()) @map("created_at")
   updatedAt      DateTime           @updatedAt @map("updated_at")
@@ -108,8 +108,8 @@ model Repository {
   organizationId String         @map("organization_id") @db.Uuid
   githubRepoId   BigInt         @unique @map("github_repo_id")
   name           String
-  /// Propriétaire GitHub quand il diffère de l'organisation (dépôts publics de la démo).
-  owner          String?
+  /// Visibilité GitHub ; privé tant qu'elle n'est pas connue : la démo n'affiche que les dépôts publics.
+  isPrivate      Boolean        @default(true) @map("is_private")
   /// Inconnue tant que le dépôt n'a pas été importé : les webhooks d'installation ne la donnent pas.
   defaultBranch  String?        @map("default_branch")
   isTracked      Boolean        @default(false) @map("is_tracked")

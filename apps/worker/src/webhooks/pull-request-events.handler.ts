@@ -8,7 +8,7 @@ import type { WebhookHandler } from './webhook-handler.js';
 /** Champs utilisés des événements `pull_request` et `pull_request_review`. */
 export interface PullRequestEventPayload {
   installation?: { id: number };
-  repository: { id: number; name: string; owner: { login: string } };
+  repository: { id: number; private?: boolean; name: string; owner: { login: string } };
   pull_request: { number: number };
 }
 
@@ -33,7 +33,7 @@ export class PullRequestEventsHandler implements WebhookHandler {
       return false;
     }
     const event = payload as PullRequestEventPayload;
-    const repo = await trackedRepository(this.prisma, event.repository.id);
+    const repo = await trackedRepository(this.prisma, event.repository);
     // Dépôt inconnu ou non suivi : rien à enregistrer, l'événement est tout de même traité.
     if (!repo || !event.installation) {
       return true;

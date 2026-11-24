@@ -12,6 +12,7 @@ interface GithubAccount {
 interface GithubRepository {
   id: number;
   name: string;
+  private: boolean;
 }
 
 /** Champs utilisés des événements `installation` et `installation_repositories`. */
@@ -118,8 +119,13 @@ export class InstallationHandler implements WebhookHandler {
     for (const repo of repos) {
       await tx.repository.upsert({
         where: { githubRepoId: BigInt(repo.id) },
-        create: { organizationId, githubRepoId: BigInt(repo.id), name: repo.name },
-        update: { organizationId, name: repo.name },
+        create: {
+          organizationId,
+          githubRepoId: BigInt(repo.id),
+          name: repo.name,
+          isPrivate: repo.private,
+        },
+        update: { organizationId, name: repo.name, isPrivate: repo.private },
       });
     }
   }

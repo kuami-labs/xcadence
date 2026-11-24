@@ -10,7 +10,7 @@ import type { WebhookHandler } from './webhook-handler.js';
 
 /** Champs utilisés de l'événement `deployment_status`. */
 export interface DeploymentStatusEventPayload {
-  repository: { id: number };
+  repository: { id: number; private?: boolean };
   deployment: GithubDeployment;
   deployment_status: GithubDeploymentStatus;
 }
@@ -28,7 +28,7 @@ export class DeploymentStatusEventsHandler implements WebhookHandler {
       return false;
     }
     const event = payload as DeploymentStatusEventPayload;
-    const repo = await trackedRepository(this.prisma, event.repository.id);
+    const repo = await trackedRepository(this.prisma, event.repository);
     if (!repo) {
       return true;
     }

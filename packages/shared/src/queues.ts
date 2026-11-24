@@ -34,8 +34,6 @@ export interface ProcessWebhookEventJob {
 /** backfill-repository : import des 90 derniers jours d'un dépôt suivi. */
 export interface BackfillRepositoryJob {
   repositoryId: string;
-  /** Profondeur en jours (90 par défaut) ; quelques jours pour un rafraîchissement incrémental. */
-  days?: number;
 }
 
 /** recompute-weekly-metrics : une organisation, ou toutes (passage nocturne) si absent. */

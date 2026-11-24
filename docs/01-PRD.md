@@ -110,9 +110,8 @@ Les médianes sont préférées aux moyennes : une PR oubliée un mois ne doit p
 1. **Semaine 1 – Fondations :** monorepo, Docker Compose (PostgreSQL, Redis), schéma Prisma, GitHub App, connexion GitHub, webhook vérifié.
 2. **Semaine 2 – Données :** import des 90 derniers jours (PR, revues, déploiements, runs), traitement des webhooks, suivi dans `sync_jobs`.
 3. **Semaine 3 – Métriques et interface :** calcul des 7 métriques avec tests, API, pages `/dashboard`, `/repositories` et `/bottlenecks`.
-4. **Semaine 4 – Finition :** résumé IA hebdomadaire, email, déploiement sur Coolify, README avec schéma et ADR, démo sur des dépôts open source, vidéo d'une minute.
+4. **Semaine 4 – Finition :** résumé IA hebdomadaire, email, déploiement sur Coolify, README avec schéma et ADR, démo publique sur nos propres dépôts (ADR 0006), vidéo d'une minute.
 
 ## Questions ouvertes
 
 - Comment détecter un déploiement quand une équipe n'utilise pas l'API Deployments de GitHub : workflow nommé, tag, ou fusion sur `main` ?
-- Quels dépôts open source utiliser pour la démo publique ?

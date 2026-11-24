@@ -75,7 +75,7 @@ function fakeOctokit(base: number) {
   const rest = {
     actions: { listWorkflowRunsForRepo: vi.fn() },
     repos: {
-      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }),
+      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main', private: false } }),
       listDeployments: vi.fn(),
       listDeploymentStatuses: vi.fn(async ({ deployment_id }: { deployment_id: number }) => ({
         data: statusesOf[deployment_id] ?? [],
@@ -203,6 +203,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
 
     const repo = await prisma.repository.findUniqueOrThrow({ where: { id: repoId } });
     expect(repo.defaultBranch).toBe('main');
+    expect(repo.isPrivate).toBe(false);
     const syncJobs = await prisma.syncJob.findMany({ where: { organizationId: orgId } });
     expect(syncJobs.map((s) => [s.type, s.status])).toEqual([['backfill', 'succeeded']]);
     expect(scheduleFor).toHaveBeenCalledWith(orgId);
@@ -223,40 +224,6 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
       where: { organizationId: orgId, status: 'failed' },
     });
     expect(failed?.error).toBe('GitHub indisponible');
-  });
-
-  it('démo : dépôt public de tiers, installation désignée, import incrémental', async () => {
-    const demo = await prisma.organization.create({
-      data: { githubOrgId: BigInt(base + 1), name: 'Démo', isDemo: true },
-    });
-    const demoRepo = await prisma.repository.create({
-      data: {
-        organizationId: demo.id,
-        githubRepoId: BigInt(base + 1),
-        owner: 'dubinc',
-        name: 'dub',
-        isTracked: true,
-      },
-    });
-    const demoJob = (days?: number) =>
-      ({ name: JOBS.backfillRepository, data: { repositoryId: demoRepo.id, days } }) as Job;
-    try {
-      delete process.env.DEMO_INSTALLATION_ID;
-      await expect(processor.process(demoJob())).rejects.toThrow('DEMO_INSTALLATION_ID absent');
-      process.env.DEMO_INSTALLATION_ID = String(base + 7);
-      github.forInstallation.mockClear();
-      // 3 jours : seules la PR 1 (2 jours) et le déploiement d'hier entrent.
-      await expect(processor.process(demoJob(3))).resolves.toEqual({
-        pullRequests: 1,
-        workflowRuns: 2,
-        deployments: 1,
-      });
-      expect(github.forInstallation).toHaveBeenCalledWith(BigInt(base + 7));
-      expect(octokit.rest.repos.get).toHaveBeenLastCalledWith({ owner: 'dubinc', repo: 'dub' });
-    } finally {
-      delete process.env.DEMO_INSTALLATION_ID;
-      await prisma.organization.delete({ where: { id: demo.id } });
-    }
   });
 
   it('ignore un dépôt non suivi et un job inconnu', async () => {

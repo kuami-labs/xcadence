@@ -1,118 +1,72 @@
-import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
-import {
-  JOBS,
-  MAX_ENVIRONMENT_LENGTH,
-  MAX_PRODUCTION_ENVIRONMENTS,
-  QUEUES,
-  type BackfillRepositoryJob,
-} from '@xcadence/shared';
-import type { Queue } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import {
-  DEMO_GITHUB_ORG_ID,
-  DEMO_ORGANIZATION_NAME,
-  demoInstallationId,
-} from './demo-installation.js';
 
-/** `propriétaire/nom` tel qu'accepté par GitHub. */
-const FULL_NAME = /^([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9._-]{1,100})$/;
-
-export interface DemoRepositoryAdded {
-  repositoryId: string;
-  fullName: string;
-  productionEnvironments: string[] | null;
+export interface DemoOrganization {
+  name: string;
+  publicRepositories: number;
+  trackedPublicRepositories: number;
 }
 
 /**
- * Organisation de démo (#81) : dépôts publics de tiers, importés avec le jeton de l'installation
- * DEMO_INSTALLATION_ID, sans webhook ni membre. Un dépôt privé est toujours refusé.
+ * Démo publique en lecture seule : une de nos organisations où la GitHub App est installée
+ * (donc un compte que nous administrons). Ses données arrivent comme pour tout client
+ * (import et webhooks) ; seuls ses dépôts publics seront montrés.
  */
 @Injectable()
 export class DemoService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly github: GithubService,
-    @InjectQueue(QUEUES.sync) private readonly sync: Queue<BackfillRepositoryJob>,
   ) {}
 
-  /** Ajoute (ou met à jour) un dépôt public à la démo et lance l'import des 90 derniers jours. */
-  async addRepository(
-    fullName: string,
-    productionEnvironments: string[] = [],
-  ): Promise<DemoRepositoryAdded> {
-    const match = FULL_NAME.exec(fullName.trim());
-    if (!match) {
-      throw new Error(`Nom de dépôt invalide : attendu propriétaire/nom`);
-    }
-    const environments = [...new Set(productionEnvironments.map((e) => e.trim()))].filter(Boolean);
-    if (
-      environments.length > MAX_PRODUCTION_ENVIRONMENTS ||
-      environments.some((e) => e.length > MAX_ENVIRONMENT_LENGTH)
-    ) {
-      throw new Error('Environnements de production invalides');
-    }
-    const installationId = demoInstallationId();
-    if (!installationId) {
-      throw new Error('DEMO_INSTALLATION_ID est requis pour la démo');
-    }
-    const [, owner, name] = match;
-    const octokit = await this.github.forInstallation(installationId);
-    const { data } = await octokit.rest.repos.get({ owner, repo: name });
-    // Le jeton de l'installation lit aussi ses dépôts privés : seuls les publics entrent dans la démo.
-    if (data.private || data.visibility !== 'public') {
-      throw new Error('Seuls les dépôts publics peuvent entrer dans la démo');
+  /** Fait de l'organisation `login` la seule organisation de démo. */
+  async enable(login: string): Promise<DemoOrganization> {
+    const org = await this.prisma.client.organization.findFirst({
+      where: { name: login, installationId: { not: null } },
+    });
+    if (!org?.installationId) {
+      throw new Error(`${login} : organisation inconnue ou GitHub App non installée`);
     }
 
-    const organization = await this.prisma.client.organization.upsert({
-      where: { githubOrgId: DEMO_GITHUB_ORG_ID },
-      create: { githubOrgId: DEMO_GITHUB_ORG_ID, name: DEMO_ORGANIZATION_NAME, isDemo: true },
-      update: {},
-    });
-    if (!organization.isDemo) {
-      throw new Error("L'organisation de démo existe sans être marquée comme telle");
-    }
-    const deployRule = environments.length > 0 ? { productionEnvironments: environments } : null;
-    const fields = {
-      organizationId: organization.id,
-      owner: data.owner.login,
-      name: data.name,
-      defaultBranch: data.default_branch,
-      isTracked: true,
-    };
-    const existing = await this.prisma.client.repository.findUnique({
-      where: { githubRepoId: BigInt(data.id) },
-    });
-    if (existing && existing.organizationId !== organization.id) {
-      throw new Error('Ce dépôt appartient déjà à une organisation cliente');
-    }
-    const repository = await this.prisma.client.repository.upsert({
-      where: { githubRepoId: BigInt(data.id) },
-      create: { githubRepoId: BigInt(data.id), ...fields, deployRule: deployRule ?? undefined },
-      update: { ...fields, ...(deployRule ? { deployRule } : {}) },
-    });
+    // Visibilité à jour avant d'exposer quoi que ce soit (privé par défaut).
+    const octokit = await this.github.forInstallation(org.installationId);
+    const accessible = await octokit.paginate(octokit.rest.apps.listReposAccessibleToInstallation);
+    const publicIds = accessible.filter((r) => !r.private).map((r) => BigInt(r.id));
+    await this.prisma.client.$transaction([
+      this.prisma.client.repository.updateMany({
+        where: { organizationId: org.id },
+        data: { isPrivate: true },
+      }),
+      this.prisma.client.repository.updateMany({
+        where: { organizationId: org.id, githubRepoId: { in: publicIds } },
+        data: { isPrivate: false },
+      }),
+      // Une seule organisation de démo à la fois.
+      this.prisma.client.organization.updateMany({
+        where: { isDemo: true, id: { not: org.id } },
+        data: { isDemo: false },
+      }),
+      this.prisma.client.organization.update({ where: { id: org.id }, data: { isDemo: true } }),
+    ]);
 
-    const jobId = `backfill-${repository.id}`;
-    const previous = await this.sync.getJob(jobId);
-    if (previous && ((await previous.isCompleted()) || (await previous.isFailed()))) {
-      await previous.remove();
-    }
-    await this.sync.add(
-      JOBS.backfillRepository,
-      { repositoryId: repository.id },
-      {
-        jobId,
-        attempts: 5,
-        backoff: { type: 'exponential', delay: 30_000 },
-        removeOnComplete: 100,
-        removeOnFail: 500,
-      },
-    );
+    const publicRepos = await this.prisma.client.repository.findMany({
+      where: { organizationId: org.id, isPrivate: false },
+      select: { isTracked: true },
+    });
     return {
-      repositoryId: repository.id,
-      fullName: `${data.owner.login}/${data.name}`,
-      productionEnvironments: deployRule?.productionEnvironments ?? null,
+      name: org.name,
+      publicRepositories: publicRepos.length,
+      trackedPublicRepositories: publicRepos.filter((r) => r.isTracked).length,
     };
+  }
+
+  /** Plus aucune organisation de démo. Retourne le nombre d'organisations retirées. */
+  async disable(): Promise<number> {
+    const { count } = await this.prisma.client.organization.updateMany({
+      where: { isDemo: true },
+      data: { isDemo: false },
+    });
+    return count;
   }
 }

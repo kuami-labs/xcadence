@@ -9,7 +9,6 @@ import { DeploymentsImporter } from './deployments.importer.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
 import { WorkflowRunsImporter } from './workflow-runs.importer.js';
 import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
-import { demoInstallationId } from '../demo/demo-installation.js';
 
 /** Profondeur de l'import initial (docs/01-PRD.md, F2). */
 export const BACKFILL_DAYS = 90;
@@ -44,14 +43,7 @@ export class BackfillProcessor extends ReportedWorkerHost {
     if (!repo || !repo.isTracked) {
       return { skipped: 'dépôt absent ou non suivi' };
     }
-    // Démo : dépôts publics de tiers lus avec l'installation désignée (aucune installation propre).
-    const installationId = repo.organization.isDemo
-      ? demoInstallationId()
-      : repo.organization.installationId;
-    if (!installationId && repo.organization.isDemo) {
-      // Erreur de configuration : échec visible (et réessayé) plutôt qu'un import ignoré en silence.
-      throw new Error('DEMO_INSTALLATION_ID absent : import de démo impossible');
-    }
+    const installationId = repo.organization.installationId;
     if (!installationId) {
       return { skipped: 'organisation sans installation' };
     }
@@ -66,15 +58,14 @@ export class BackfillProcessor extends ReportedWorkerHost {
     });
     try {
       const octokit = await this.github.forInstallation(installationId);
-      const owner = repo.owner ?? repo.organization.name;
+      const owner = repo.organization.name;
       const { data } = await octokit.rest.repos.get({ owner, repo: repo.name });
       await this.prisma.client.repository.update({
         where: { id: repo.id },
-        data: { defaultBranch: data.default_branch },
+        data: { defaultBranch: data.default_branch, isPrivate: data.private },
       });
 
-      const days = job.data.days ?? BACKFILL_DAYS;
-      const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      const since = new Date(Date.now() - BACKFILL_DAYS * 24 * 60 * 60 * 1000);
       const target = { id: repo.id, owner, name: repo.name };
       const pullRequests = await this.pullRequests.import(octokit, target, since);
       const workflowRuns = await this.workflowRuns.import(octokit, target, since);

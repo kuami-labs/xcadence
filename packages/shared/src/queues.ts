@@ -9,6 +9,8 @@ export const QUEUES = {
   sync: 'sync',
   /** Recalcul des métriques hebdomadaires. */
   metrics: 'metrics',
+  /** Résumé hebdomadaire et alertes. */
+  insights: 'insights',
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];
@@ -17,6 +19,7 @@ export const JOBS = {
   processWebhookEvent: 'process-webhook-event',
   backfillRepository: 'backfill-repository',
   recomputeWeeklyMetrics: 'recompute-weekly-metrics',
+  generateWeeklySummary: 'generate-weekly-summary',
 } as const;
 
 /** process-webhook-event : l'événement brut est déjà enregistré dans webhook_events. */
@@ -31,6 +34,11 @@ export interface BackfillRepositoryJob {
 
 /** recompute-weekly-metrics : une organisation, ou toutes (passage nocturne) si absent. */
 export interface RecomputeWeeklyMetricsJob {
+  organizationId?: string;
+}
+
+/** generate-weekly-summary : une organisation, ou toutes (passage du lundi) si absent. */
+export interface GenerateWeeklySummaryJob {
   organizationId?: string;
 }
 

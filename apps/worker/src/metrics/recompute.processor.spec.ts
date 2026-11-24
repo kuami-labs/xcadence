@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JOBS, METRIC_KEYS } from '@xcadence/shared';
 import type { Job } from 'bullmq';
@@ -9,7 +10,7 @@ describe.skipIf(!process.env.DATABASE_URL)('RecomputeProcessor', () => {
   let module: TestingModule;
   let processor: RecomputeProcessor;
   let prisma: PrismaService['client'];
-  const base = Date.now() * 100;
+  const base = randomInt(1_000_000, 900_000_000) * 1000;
   let orgId: string;
   let repoId: string;
   let userId: string;

@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JOBS } from '@xcadence/shared';
 import type { Job } from 'bullmq';
@@ -116,7 +117,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
   let module: TestingModule;
   let processor: BackfillProcessor;
   let prisma: PrismaService['client'];
-  const base = Date.now() * 100;
+  const base = randomInt(1_000_000, 900_000_000) * 1000;
   const octokit = fakeOctokit(base);
   const github = { forInstallation: vi.fn().mockResolvedValue(octokit) };
   const scheduleFor = vi.fn();

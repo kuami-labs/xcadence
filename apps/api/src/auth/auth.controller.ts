@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   ForbiddenException,
   Get,
@@ -59,9 +58,16 @@ export class AuthController {
       state.length !== expected.length ||
       !timingSafeEqual(Buffer.from(state), Buffer.from(expected))
     ) {
-      throw new BadRequestException('Connexion GitHub invalide, recommencez');
+      // State absent ou différent (retour rejoué, lien expiré) : retour à la page de connexion.
+      return res.redirect(`${webUrl()}/login?erreur=connexion`);
     }
-    const userId = await this.auth.loginWithGithub(code);
+    let userId: string;
+    try {
+      userId = await this.auth.loginWithGithub(code);
+    } catch {
+      // Code refusé par GitHub : même message, sans détail.
+      return res.redirect(`${webUrl()}/login?erreur=connexion`);
+    }
     const token = await this.auth.createSession(userId);
     res.cookie(SESSION_COOKIE, token, cookieOptions(SESSION_TTL_MS));
     res.redirect(`${webUrl()}/dashboard`);

@@ -6,6 +6,7 @@ import type {
   MetricKey,
   MetricsResponse,
   SyncStatusResponse,
+  WeeklySummaryView,
 } from '@xcadence/shared';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { MetricsQueryDto } from './metrics-query.dto.js';
@@ -120,5 +121,16 @@ export class DashboardService {
         finishedAt: j.finishedAt?.toISOString() ?? null,
       })),
     };
+  }
+
+  /** Dernier résumé hebdomadaire de l'organisation. */
+  async latestSummary(organizationId: string): Promise<WeeklySummaryView | null> {
+    const summary = await this.prisma.client.weeklySummary.findFirst({
+      where: { organizationId },
+      orderBy: { weekStart: 'desc' },
+    });
+    return summary
+      ? { weekStart: day(summary.weekStart), content: summary.content, model: summary.model }
+      : null;
   }
 }

@@ -64,3 +64,12 @@ export interface PublicConfigResponse {
   /** Adresse d'installation de la GitHub App ; null si GITHUB_APP_SLUG n'est pas défini. */
   githubAppInstallUrl: string | null;
 }
+
+/** GET /orgs/:orgId/summaries/latest : dernier résumé hebdomadaire, null s'il n'y en a pas. */
+export interface WeeklySummaryView {
+  /** Lundi de la semaine résumée, AAAA-MM-JJ. */
+  weekStart: string;
+  content: string;
+  /** Modèle qui l'a rédigé, ou `repli` (résumé sans IA). */
+  model: string;
+}

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { useBottlenecks } from '@/hooks/use-dashboard';
 import { useOrganization } from '@/hooks/use-organization';
-import { formatAge } from '@/lib/format';
+import { formatAge, formatLines } from '@/lib/format';
 import { formatValue } from '@/lib/metrics/summary';
 
 /** Goulots (F4) : PR qui attendent, PR anciennes, CI lente ou instable. Aucun classement par personne. */
@@ -143,7 +143,7 @@ function PullRequestTable({
                   <TableCell className="text-right tabular-nums">
                     {formatAge(pr.ageHours)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums">{pr.size} lignes</TableCell>
+                  <TableCell className="text-right tabular-nums">{formatLines(pr.size)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

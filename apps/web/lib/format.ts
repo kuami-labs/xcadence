@@ -6,3 +6,8 @@ export function formatAge(hours: number): string {
   const rest = whole % 24;
   return rest ? `${days} j ${rest} h` : `${days} j`;
 }
+
+/** Taille d'une PR : « 1 ligne », « 14 lignes ». */
+export function formatLines(lines: number): string {
+  return `${lines} ligne${lines > 1 ? 's' : ''}`;
+}

@@ -14,3 +14,15 @@ export interface MeResponse {
   user: { id: string; login: string; avatarUrl: string | null };
   organizations: { id: string; name: string; role: 'owner' | 'member' }[];
 }
+
+/** GET /orgs/:orgId/repositories/:id/pull-requests : PR récentes d'un dépôt (aucun auteur). */
+export interface RecentPullRequest {
+  number: number;
+  state: 'open' | 'closed' | 'merged';
+  isDraft: boolean;
+  createdAt: string;
+  mergedAt: string | null;
+  size: number;
+  /** Heures entre l'ouverture et la première revue ; null sans revue. */
+  timeToFirstReviewHours: number | null;
+}

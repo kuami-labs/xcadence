@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Switch } from '@/components/ui/switch';
 import { useRepositories, useTrackRepository } from '@/hooks/use-dashboard';
 
@@ -28,9 +29,19 @@ export function RepositoryList({ orgId }: { orgId: string }) {
     <ul className="divide-y rounded-lg border">
       {repositories.data.map((repo) => (
         <li key={repo.id} className="flex items-center justify-between gap-4 px-4 py-3">
-          <label htmlFor={`suivi-${repo.id}`} className="font-medium">
-            {repo.name}
-          </label>
+          <div className="flex items-center gap-3">
+            <label htmlFor={`suivi-${repo.id}`} className="font-medium">
+              {repo.name}
+            </label>
+            {repo.isTracked ? (
+              <Link
+                className="text-sm text-muted-foreground underline"
+                href={`/repositories/${repo.id}?org=${orgId}`}
+              >
+                Voir les métriques
+              </Link>
+            ) : null}
+          </div>
           <Switch
             id={`suivi-${repo.id}`}
             checked={repo.isTracked}

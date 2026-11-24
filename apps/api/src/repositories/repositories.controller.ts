@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common';
-import type { RepositoryView } from '@xcadence/shared';
+import type { RecentPullRequest, RepositoryView } from '@xcadence/shared';
 import { OrganizationGuard } from '../auth/organization/organization.guard.js';
 import { SessionGuard } from '../auth/session/session.guard.js';
 import { RepositoriesService } from './repositories.service.js';
@@ -23,5 +23,13 @@ export class RepositoriesController {
     @Body() dto: UpdateRepositoryDto,
   ): Promise<RepositoryView> {
     return this.repositories.update(orgId, id, dto);
+  }
+
+  @Get(':id/pull-requests')
+  pullRequests(
+    @Param('orgId') orgId: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<RecentPullRequest[]> {
+    return this.repositories.recentPullRequests(orgId, id);
   }
 }

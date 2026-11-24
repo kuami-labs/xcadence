@@ -5,6 +5,7 @@ import type {
   BottlenecksResponse,
   MetricsResponse,
   PublicConfigResponse,
+  RecentPullRequest,
   RepositoryView,
   SyncStatusResponse,
 } from '@xcadence/shared';
@@ -88,5 +89,15 @@ export function useTrackRepository(orgId: string | undefined) {
       void client.invalidateQueries({ queryKey: ['repositories', orgId] });
       void client.invalidateQueries({ queryKey: ['sync-status', orgId] });
     },
+  });
+}
+
+/** Les 20 PR les plus récentes d'un dépôt. */
+export function useRecentPullRequests(orgId: string | undefined, repositoryId: string) {
+  return useQuery({
+    queryKey: ['pull-requests', orgId, repositoryId],
+    queryFn: () =>
+      apiFetch<RecentPullRequest[]>(`/orgs/${orgId}/repositories/${repositoryId}/pull-requests`),
+    enabled: Boolean(orgId),
   });
 }

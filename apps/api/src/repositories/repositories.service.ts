@@ -1,7 +1,13 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@xcadence/db';
-import { JOBS, QUEUES, type BackfillRepositoryJob, type RepositoryView } from '@xcadence/shared';
+import {
+  JOBS,
+  QUEUES,
+  type BackfillRepositoryJob,
+  type RecentPullRequest,
+  type RepositoryView,
+} from '@xcadence/shared';
 import type { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { UpdateRepositoryDto } from './update-repository.dto.js';
@@ -73,5 +79,29 @@ export class RepositoriesService {
       );
     }
     return repository;
+  }
+
+  /** Les 20 PR les plus récentes d'un dépôt de l'organisation ; 404 s'il n'en fait pas partie. */
+  async recentPullRequests(organizationId: string, id: string): Promise<RecentPullRequest[]> {
+    const repo = await this.prisma.client.repository.findFirst({ where: { id, organizationId } });
+    if (!repo) {
+      throw new NotFoundException();
+    }
+    const prs = await this.prisma.client.pullRequest.findMany({
+      where: { repositoryId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+    return prs.map((pr) => ({
+      number: pr.number,
+      state: pr.state,
+      isDraft: pr.isDraft,
+      createdAt: pr.createdAt.toISOString(),
+      mergedAt: pr.mergedAt?.toISOString() ?? null,
+      size: pr.additions + pr.deletions,
+      timeToFirstReviewHours: pr.firstReviewAt
+        ? Math.round(((pr.firstReviewAt.getTime() - pr.createdAt.getTime()) / 3_600_000) * 10) / 10
+        : null,
+    }));
   }
 }

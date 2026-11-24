@@ -20,6 +20,7 @@ const provider = (
 
 // Intégration sur PostgreSQL (DATABASE_URL) ; aucun appel à un vrai modèle.
 describe.skipIf(!process.env.DATABASE_URL)('SummaryProcessor', () => {
+  const notifications = { add: vi.fn() };
   let module: TestingModule;
   let processor: SummaryProcessor;
   let prisma: PrismaService['client'];
@@ -60,6 +61,7 @@ describe.skipIf(!process.env.DATABASE_URL)('SummaryProcessor', () => {
         SummaryProcessor,
         PrismaService,
         { provide: getQueueToken(QUEUES.insights), useValue: {} },
+        { provide: getQueueToken(QUEUES.notifications), useValue: notifications },
       ],
     }).compile();
     processor = module.get(SummaryProcessor);
@@ -81,7 +83,14 @@ describe.skipIf(!process.env.DATABASE_URL)('SummaryProcessor', () => {
     const ok = provider('6 déploiements en production, +50 % sur la semaine.');
     await expect(processor.summarize(id, NOW, ok)).resolves.toBe('written');
     await expect(processor.summarize(id, NOW, ok)).resolves.toBe('exists');
-    expect(await summaryOf(id)).toMatchObject({
+    const saved = await summaryOf(id);
+    expect(notifications.add).toHaveBeenCalledTimes(1);
+    expect(notifications.add).toHaveBeenCalledWith(
+      JOBS.sendNotifications,
+      { summaryId: saved?.id },
+      expect.objectContaining({ jobId: saved?.id }),
+    );
+    expect(saved).toMatchObject({
       model: 'modele-test',
       content: '6 déploiements en production, +50 % sur la semaine.',
     });

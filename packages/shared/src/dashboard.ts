@@ -73,3 +73,9 @@ export interface WeeklySummaryView {
   /** Modèle qui l'a rédigé, ou `repli` (résumé sans IA). */
   model: string;
 }
+
+/** Destinataire du résumé (GET/POST /orgs/:orgId/summary-recipients). */
+export interface SummaryRecipientView {
+  id: string;
+  email: string;
+}

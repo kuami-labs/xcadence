@@ -7,6 +7,7 @@ import type {
   PublicConfigResponse,
   RecentPullRequest,
   RepositoryView,
+  SummaryRecipientView,
   SyncStatusResponse,
   WeeklySummaryView,
 } from '@xcadence/shared';
@@ -110,5 +111,36 @@ export function useLatestSummary(orgId: string | undefined) {
     queryFn: () =>
       apiFetch<{ summary: WeeklySummaryView | null }>(`/orgs/${orgId}/summaries/latest`),
     enabled: Boolean(orgId),
+  });
+}
+
+/** Destinataires du résumé hebdomadaire par email. */
+export function useSummaryRecipients(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ['summary-recipients', orgId],
+    queryFn: () => apiFetch<SummaryRecipientView[]>(`/orgs/${orgId}/summary-recipients`),
+    enabled: Boolean(orgId),
+  });
+}
+
+export function useAddSummaryRecipient(orgId: string | undefined) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (email: string) =>
+      apiFetch<SummaryRecipientView>(`/orgs/${orgId}/summary-recipients`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email }),
+      }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['summary-recipients', orgId] }),
+  });
+}
+
+export function useRemoveSummaryRecipient(orgId: string | undefined) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<void>(`/orgs/${orgId}/summary-recipients/${id}`, { method: 'DELETE' }),
+    onSuccess: () => client.invalidateQueries({ queryKey: ['summary-recipients', orgId] }),
   });
 }

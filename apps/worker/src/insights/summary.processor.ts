@@ -1,6 +1,11 @@
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, OnModuleInit } from '@nestjs/common';
-import { JOBS, QUEUES, type GenerateWeeklySummaryJob } from '@xcadence/shared';
+import {
+  JOBS,
+  QUEUES,
+  type GenerateWeeklySummaryJob,
+  type SendNotificationsJob,
+} from '@xcadence/shared';
 import type { Job, Queue } from 'bullmq';
 import { weekStart } from '../metrics/stats.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -28,6 +33,8 @@ export class SummaryProcessor extends WorkerHost implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue(QUEUES.insights) private readonly queue: Queue<GenerateWeeklySummaryJob>,
+    @InjectQueue(QUEUES.notifications)
+    private readonly notifications: Queue<SendNotificationsJob>,
   ) {
     super();
   }
@@ -94,9 +101,14 @@ export class SummaryProcessor extends WorkerHost implements OnModuleInit {
         `Fournisseur IA indisponible : ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-    await this.prisma.client.weeklySummary.create({
+    const summary = await this.prisma.client.weeklySummary.create({
       data: { organizationId, weekStart: week, content: content ?? fallbackSummary(facts), model },
     });
+    await this.notifications.add(
+      JOBS.sendNotifications,
+      { summaryId: summary.id },
+      { jobId: summary.id, removeOnComplete: true },
+    );
     return content === null ? 'fallback' : 'written';
   }
 }

@@ -250,9 +250,15 @@ SUMMARY_PROVIDER=fake
 # anthropic : API Claude (plus tard)
 # ANTHROPIC_API_KEY=
 
-# Emails : Mailpit en dev
+# Emails (ADR 0005) : Mailpit en dev, rien ne part (http://localhost:8025)
 SMTP_HOST=mailpit
 SMTP_PORT=1025
+# Production avec Resend : SMTP_HOST=smtp.resend.com, SMTP_PORT=465, SMTP_USER=resend, SMTP_PASSWORD=<clé API Resend>
+# SMTP_USER=
+# SMTP_PASSWORD=
+MAIL_FROM=XCadence <resume@xcadence.local>
+# Adresse publique de l'API, pour le lien de désinscription des emails
+API_URL=http://localhost:4000
 ```
 
 - `SUMMARY_PROVIDER=fake` renvoie un résumé fixe : **aucun modèle ni aucune clé n'est nécessaire pour contribuer**.

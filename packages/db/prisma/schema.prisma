@@ -33,16 +33,17 @@ model User {
 }
 
 model Organization {
-  id             String          @id @default(uuid(7)) @db.Uuid
-  githubOrgId    BigInt          @unique @map("github_org_id")
+  id             String             @id @default(uuid(7)) @db.Uuid
+  githubOrgId    BigInt             @unique @map("github_org_id")
   name           String
-  installationId BigInt?         @unique @map("installation_id")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  installationId BigInt?            @unique @map("installation_id")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
   memberships    Membership[]
   repositories   Repository[]
   weeklyMetrics  WeeklyMetric[]
   summaries      WeeklySummary[]
+  recipients     SummaryRecipient[]
   syncJobs       SyncJob[]
 
   @@map("organizations")
@@ -222,6 +223,20 @@ model WeeklySummary {
 
   @@unique([organizationId, weekStart])
   @@map("weekly_summaries")
+}
+
+/// Destinataire du résumé hebdomadaire (donnée personnelle : supprimée avec l'organisation).
+model SummaryRecipient {
+  id               String       @id @default(uuid(7)) @db.Uuid
+  organizationId   String       @map("organization_id") @db.Uuid
+  email            String
+  /// Jeton aléatoire du lien de désinscription en un clic.
+  unsubscribeToken String       @unique @map("unsubscribe_token")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email])
+  @@map("summary_recipients")
 }
 
 // ---------- Technique ----------

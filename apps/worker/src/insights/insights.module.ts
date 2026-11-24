@@ -4,7 +4,7 @@ import { QUEUES } from '@xcadence/shared';
 import { SummaryProcessor } from './summary.processor.js';
 
 @Module({
-  imports: [BullModule.registerQueue({ name: QUEUES.insights })],
+  imports: [BullModule.registerQueue({ name: QUEUES.insights }, { name: QUEUES.notifications })],
   providers: [SummaryProcessor],
 })
 export class InsightsModule {}

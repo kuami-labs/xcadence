@@ -41,7 +41,7 @@ La v1 sert un seul rôle prioritaire, le CTO, sur une seule source, GitHub.
 | --- | ------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | -------- |
 | F1  | Connexion GitHub          | En tant que CTO, je connecte mon organisation via une GitHub App et je choisis les dépôts suivis | Installation en moins de 2 min, dépôts listés         | Must     |
 | F2  | Import et synchronisation | En tant que CTO, je vois 90 jours d'historique dès la connexion, puis les nouveautés en continu  | Import initial < 10 min ; webhooks traités < 1 min    | Must     |
-| F3  | Tableau de bord DORA      | En tant que CTO, je vois les 4 métriques DORA, leur tendance et leur niveau (Elite à Low)        | Filtres par dépôt et période (4, 12 semaines)         | Must     |
+| F3  | Tableau de bord DORA      | En tant que CTO, je vois les 4 métriques DORA et leur tendance                                   | Filtres par dépôt et période (4, 12 semaines)         | Must     |
 | F4  | Goulots d'étranglement    | En tant que Tech Lead, je vois les PR bloquées, les revues lentes et la CI qui ralentit          | Liste des PR en attente > 48 h, tri par ancienneté    | Must     |
 | F5  | Résumé hebdomadaire IA    | En tant que CTO, je reçois chaque lundi 5 lignes qui disent ce qui a changé et quoi regarder     | Chaque phrase cite un chiffre réel du tableau de bord | Should   |
 | F6  | Alertes                   | En tant que CTO, je suis prévenu quand une métrique se dégrade fortement                         | Seuil configurable, email ou Slack                    | Could    |
@@ -75,7 +75,18 @@ Les calculs vivent dans `apps/worker/src/metrics`, couverts à 100 % par des tes
 - **Durée de vie des PR** : ouverture → fusion, par semaine de fusion.
 - **Durée de la CI** : runs terminés sur la branche principale, p50 et p90, par semaine de démarrage.
 
-Les niveaux Elite, High, Medium et Low suivent les seuils publiés par le programme DORA ; ils seront vérifiés sur la dernière édition du rapport avant l'implémentation.
+### Niveaux DORA (Elite à Low) : vérification de novembre 2026
+
+Le PRD prévoyait de vérifier les seuils sur la dernière édition du rapport avant l'implémentation (issue #44). Constat :
+
+- Le **rapport 2024** est la dernière édition à publier des groupes Elite, High, Medium et Low avec des seuils.
+- Le **rapport 2025** (_State of AI-assisted Software Development_) et la mise à jour du **Quick Check** d'avril 2026 n'en publient plus : un score de 0 à 10 et une comparaison à des repères issus de la recherche 2025, sans seuils fixes. Les profils d'équipes (7 archétypes) mêlent performance, stabilité et bien-être.
+- DORA suit désormais **cinq métriques** : délai de livraison (_change lead time_), fréquence de déploiement, temps de rétablissement après un déploiement en échec (_failed deployment recovery time_), taux d'échec des changements (_change fail rate_) et **taux de reprise des déploiements** (_deployment rework rate_, nouveau).
+- Le guide DORA met en garde contre le **classement** et la **comparaison** d'équipes, et contre le mélange des métriques de contextes différents.
+
+**Décision (novembre 2026)** : pas de niveau Elite à Low. Chaque métrique affiche sa valeur et sa **tendance** par rapport à la période précédente ; l'objectif est que chaque équipe progresse, pas de la comparer.
+
+Sources : [guide des métriques DORA](https://dora.dev/guides/dora-metrics-four-keys/), [mise à jour du Quick Check](https://dora.dev/insights/quickcheck-updates/), [rapport 2024](https://dora.dev/research/2024/dora-report/), [rapport 2025](https://cloud.google.com/resources/content/2025-dora-ai-assisted-software-development-report).
 
 Les médianes sont préférées aux moyennes : une PR oubliée un mois ne doit pas fausser toute la semaine.
 

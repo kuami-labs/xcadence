@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { InstallationHandler } from './installation.handler.js';
 import { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import type { WebhookHandler } from './webhook-handler.js';
+import { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
 
 export type ProcessResult = 'processed' | 'ignored' | 'already-processed' | 'missing';
 
@@ -23,9 +24,10 @@ export class WebhookEventsProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     installation: InstallationHandler,
     pullRequests: PullRequestEventsHandler,
+    workflowRuns: WorkflowRunEventsHandler,
   ) {
     super();
-    this.handlers = [installation, pullRequests];
+    this.handlers = [installation, pullRequests, workflowRuns];
   }
 
   async process(job: Job<ProcessWebhookEventJob>): Promise<ProcessResult> {
@@ -52,7 +54,7 @@ export class WebhookEventsProcessor extends WorkerHost {
       }
     }
     if (!handled) {
-      // Pas encore géré (#22, #23) : laissé non traité pour l'être plus tard.
+      // Pas encore géré (déploiements : #23) : laissé non traité pour l'être plus tard.
       this.logger.log(`Événement ${event.eventType} ${event.id} ignoré pour l'instant`);
       return 'ignored';
     }

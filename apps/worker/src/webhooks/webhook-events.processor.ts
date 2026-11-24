@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type ProcessWebhookEventJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
@@ -9,6 +9,7 @@ import { InstallationHandler } from './installation.handler.js';
 import { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import type { WebhookHandler } from './webhook-handler.js';
 import { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
+import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
 
 export type ProcessResult = 'processed' | 'ignored' | 'already-processed' | 'missing';
 
@@ -17,7 +18,7 @@ export type ProcessResult = 'processed' | 'ignored' | 'already-processed' | 'mis
  * le confie au bon gestionnaire, puis le marque traité.
  */
 @Processor(QUEUES.webhooks)
-export class WebhookEventsProcessor extends WorkerHost {
+export class WebhookEventsProcessor extends ReportedWorkerHost {
   private readonly logger = new Logger(WebhookEventsProcessor.name);
 
   private readonly handlers: WebhookHandler[];

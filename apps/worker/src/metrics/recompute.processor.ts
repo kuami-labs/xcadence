@@ -1,9 +1,10 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type RecomputeWeeklyMetricsJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { organizationMetrics } from './organization-metrics.js';
+import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
 
 /**
  * recompute-weekly-metrics (docs/03-BACKEND.md) : recalcule weekly_metrics d'une organisation,
@@ -11,7 +12,7 @@ import { organizationMetrics } from './organization-metrics.js';
  * Idempotent : les métriques de l'organisation sont remplacées dans une transaction.
  */
 @Processor(QUEUES.metrics)
-export class RecomputeProcessor extends WorkerHost {
+export class RecomputeProcessor extends ReportedWorkerHost {
   private readonly logger = new Logger(RecomputeProcessor.name);
 
   constructor(private readonly prisma: PrismaService) {

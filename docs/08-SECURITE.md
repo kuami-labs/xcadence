@@ -45,7 +45,11 @@
 
 - **Secret scanning** et **push protection** activés sur le dépôt : GitHub bloque un push qui contient un secret reconnu.
 - Un secret exposé, même quelques secondes, est **révoqué et remplacé**. Supprimer le commit ne suffit pas.
-- Les logs n'affichent jamais de jeton, d'en-tête `Authorization` ni de payload complet de webhook.
+- Les logs n'affichent jamais de jeton, d'en-tête `Authorization` ni de payload complet de webhook. Mise en œuvre (`packages/shared/src/logging.ts`) :
+  - l'API journalise une ligne par requête avec seulement la méthode, le chemin **sans query** (jetons de désinscription, codes OAuth) et le statut ; les en-têtes, cookies et corps n'y entrent jamais ;
+  - pino masque en plus les champs sensibles (`authorization`, `cookie`, `token`, `payload`…) ;
+  - un job en échec est journalisé avec sa file, son nom et l'essai, jamais ses données.
+- Sentry est optionnel (`SENTRY_DSN` vide par défaut). Quand il est actif, il ne reçoit que l'erreur et sa pile : la collecte de Sentry 11 (`dataCollection`) est entièrement coupée (utilisateur, en-têtes, cookies, query, corps, SQL, arguments des jobs, variables locales) et `beforeSend` retire encore la requête. Les erreurs HTTP attendues (4xx) ne sont pas envoyées.
 
 ## Dépôt, branches et revue
 

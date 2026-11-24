@@ -259,6 +259,13 @@ SMTP_PORT=1025
 MAIL_FROM=XCadence <resume@xcadence.local>
 # Adresse publique de l'API, pour le lien de désinscription des emails
 API_URL=http://localhost:4000
+
+# Logs (pino) : lisibles en dev, JSON en production (NODE_ENV=production) ou avec LOG_FORMAT=json
+# LOG_LEVEL=info
+# LOG_FORMAT=json
+# Sentry (optionnel) : vide = rien n'est envoyé
+SENTRY_DSN=
+# SENTRY_ENVIRONMENT=production
 ```
 
 - `SUMMARY_PROVIDER=fake` renvoie un résumé fixe : **aucun modèle ni aucune clé n'est nécessaire pour contribuer**.

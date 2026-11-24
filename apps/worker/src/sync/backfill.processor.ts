@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Processor } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { JOBS, QUEUES, type BackfillRepositoryJob } from '@xcadence/shared';
 import type { Job } from 'bullmq';
@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { DeploymentsImporter } from './deployments.importer.js';
 import { PullRequestsImporter } from './pull-requests.importer.js';
 import { WorkflowRunsImporter } from './workflow-runs.importer.js';
+import { ReportedWorkerHost } from '../observability/reported-worker-host.js';
 
 /** Profondeur de l'import initial (docs/01-PRD.md, F2). */
 export const BACKFILL_DAYS = 90;
@@ -17,7 +18,7 @@ export type BackfillResult =
 
 /** backfill-repository : import des 90 derniers jours d'un dépôt suivi, suivi dans sync_jobs. */
 @Processor(QUEUES.sync)
-export class BackfillProcessor extends WorkerHost {
+export class BackfillProcessor extends ReportedWorkerHost {
   private readonly logger = new Logger(BackfillProcessor.name);
 
   constructor(

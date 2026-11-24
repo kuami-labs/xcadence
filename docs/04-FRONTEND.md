@@ -7,7 +7,7 @@ L'application Next.js compte 6 pages ; elle lit uniquement l'API NestJS et ne pa
 | `/login`             | Connexion         | Bouton « Se connecter avec GitHub »                                                 |
 | `/onboarding`        | Installation      | Installer la GitHub App, choisir les dépôts, suivre l'import                        |
 | `/dashboard`         | Vue d'ensemble    | 4 cartes DORA (valeur, tendance), résumé de la semaine, courbes sur 12 semaines     |
-| `/repositories/[id]` | Détail d'un dépôt | Métriques du dépôt, durée de la CI, PR récentes                                     |
+| `/repositories/[id]` | Détail d'un dépôt | Métriques du dépôt, durée de la CI, environnements de production, PR récentes       |
 | `/bottlenecks`       | Goulots           | PR en attente de revue, PR anciennes, jobs de CI lents ou instables                 |
 | `/settings`          | Paramètres        | Dépôts suivis, détection des déploiements, destinataires du résumé, seuils d'alerte |
 

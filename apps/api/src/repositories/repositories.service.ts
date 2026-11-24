@@ -4,8 +4,12 @@ import { Prisma } from '@xcadence/db';
 import {
   JOBS,
   QUEUES,
+  isProductionEnvironment,
+  parseDeployRule,
   type BackfillRepositoryJob,
   type RecentPullRequest,
+  type RecomputeWeeklyMetricsJob,
+  type RepositoryEnvironment,
   type RepositoryView,
 } from '@xcadence/shared';
 import type { Queue } from 'bullmq';
@@ -21,19 +25,26 @@ const publicFields = {
   deployRule: true,
 } as const;
 
+const toView = (repository: Omit<RepositoryView, 'deployRule'> & { deployRule: unknown }) => ({
+  ...repository,
+  deployRule: parseDeployRule(repository.deployRule),
+});
+
 @Injectable()
 export class RepositoriesService {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue(QUEUES.sync) private readonly sync: Queue<BackfillRepositoryJob>,
+    @InjectQueue(QUEUES.metrics) private readonly metrics: Queue<RecomputeWeeklyMetricsJob>,
   ) {}
 
-  list(organizationId: string): Promise<RepositoryView[]> {
-    return this.prisma.client.repository.findMany({
+  async list(organizationId: string): Promise<RepositoryView[]> {
+    const repositories = await this.prisma.client.repository.findMany({
       where: { organizationId },
       select: publicFields,
       orderBy: { name: 'asc' },
     });
+    return repositories.map(toView);
   }
 
   /** Met à jour un dépôt de l'organisation ; le passer en suivi lance l'import des 90 derniers jours. */
@@ -44,7 +55,7 @@ export class RepositoriesService {
   ): Promise<RepositoryView> {
     const current = await this.prisma.client.repository.findFirst({
       where: { id, organizationId },
-      select: { isTracked: true },
+      select: { isTracked: true, deployRule: true },
     });
     if (!current) {
       throw new NotFoundException();
@@ -54,10 +65,28 @@ export class RepositoriesService {
       data: {
         isTracked: dto.isTracked,
         deployRule:
-          dto.deployRule === null ? Prisma.DbNull : (dto.deployRule as Prisma.InputJsonValue),
+          dto.deployRule === null
+            ? Prisma.DbNull
+            : dto.deployRule && { productionEnvironments: dto.deployRule.productionEnvironments },
       },
       select: publicFields,
     });
+    if (
+      dto.deployRule !== undefined &&
+      JSON.stringify(parseDeployRule(dto.deployRule)) !==
+        JSON.stringify(parseDeployRule(current.deployRule))
+    ) {
+      // Nouvelle règle : les métriques DORA de l'organisation sont recalculées.
+      await this.metrics.add(
+        JOBS.recomputeWeeklyMetrics,
+        { organizationId },
+        {
+          deduplication: { id: `recompute-${organizationId}` },
+          removeOnComplete: 100,
+          removeOnFail: 500,
+        },
+      );
+    }
     if (dto.isTracked && !current.isTracked) {
       // Un ancien import terminé garde son identifiant dans Redis et bloquerait le nouveau :
       // suivre de nouveau un dépôt doit relancer son import.
@@ -78,7 +107,31 @@ export class RepositoriesService {
         },
       );
     }
-    return repository;
+    return toView(repository);
+  }
+
+  /** Environnements vus dans les déploiements importés du dépôt, les plus fréquents d'abord. */
+  async environments(organizationId: string, id: string): Promise<RepositoryEnvironment[]> {
+    const repo = await this.prisma.client.repository.findFirst({
+      where: { id, organizationId },
+      select: { deployRule: true },
+    });
+    if (!repo) {
+      throw new NotFoundException();
+    }
+    const rule = parseDeployRule(repo.deployRule);
+    const groups = await this.prisma.client.deployment.groupBy({
+      by: ['environment'],
+      where: { repositoryId: id },
+      _count: { _all: true },
+    });
+    return groups
+      .map((g) => ({
+        name: g.environment,
+        deployments: g._count._all,
+        isProduction: isProductionEnvironment(g.environment, rule),
+      }))
+      .sort((a, b) => b.deployments - a.deployments || a.name.localeCompare(b.name));
   }
 
   /** Les 20 PR les plus récentes d'un dépôt de l'organisation ; 404 s'il n'en fait pas partie. */

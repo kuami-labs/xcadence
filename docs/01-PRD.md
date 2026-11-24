@@ -66,7 +66,7 @@ Toutes les métriques sont calculées par semaine et par dépôt, à partir des 
 Les calculs vivent dans `apps/worker/src/metrics`, couverts à 100 % par des tests.
 
 - **Semaine** : du lundi 00:00 UTC au dimanche ; chaque valeur garde son nombre d'éléments (`sample_size`).
-- **Production** : environnement `production` ou `prod` (une règle par dépôt viendra avec `deploy_rule`). Un déploiement **réussi** a le statut `success`, ou `inactive` (réussi puis remplacé) ; **en échec** : `failure` ou `error`. Les déploiements non terminés sont ignorés.
+- **Production** : par défaut, environnement `production` ou `prod` ; chaque dépôt peut désigner ses propres environnements de production (`deploy_rule`), par exemple « Production – ui » chez Vercel. Un déploiement **réussi** a le statut `success`, ou `inactive` (réussi puis remplacé) ; **en échec** : `failure` ou `error`. Les déploiements non terminés sont ignorés.
 - **Fréquence de déploiement** : déploiements réussis en production, par semaine.
 - **Délai de livraison** : premier commit de la PR (son ouverture à défaut) → premier déploiement réussi en production **après sa fusion** ; semaine du déploiement. Sans lien commit par commit, c'est une approximation.
 - **Taux d'échec des changements** : un changement échoue s'il est en échec, ou s'il est **annulé par un rollback** : redéploiement, sous 48 h, d'un commit déjà déployé avant lui. Les hotfix et reverts ne sont pas encore détectés : XCadence ne stocke ni titres ni labels de PR.

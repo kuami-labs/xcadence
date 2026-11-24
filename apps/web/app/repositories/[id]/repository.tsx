@@ -3,7 +3,8 @@
 import { useParams } from 'next/navigation';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { TrendChart } from '@/components/dashboard/trend-chart';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProductionEnvironments } from '@/components/repository/production-environments';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -75,6 +76,23 @@ export function Repository() {
           />
         </CardContent>
       </Card>
+      {orgId && repository && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Environnements de production</CardTitle>
+            <CardDescription>
+              Quels déploiements comptent comme une mise en production.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ProductionEnvironments
+              orgId={orgId}
+              repositoryId={repository.id}
+              rule={repository.deployRule}
+            />
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">PR récentes</CardTitle>

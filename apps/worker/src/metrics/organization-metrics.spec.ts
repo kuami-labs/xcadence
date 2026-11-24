@@ -53,6 +53,27 @@ describe('métriques d’une organisation', () => {
     expect(get(null, METRIC_KEYS.leadTime)?.value).toBe(7);
   });
 
+  it('applique la règle de déploiement de chaque dépôt', () => {
+    const vercel = (id: string): RepositoryData => {
+      const r = repo(id, 'trunk', 14);
+      return {
+        ...r,
+        deployments: r.deployments.map((d) => ({ ...d, environment: 'Production – ui' })),
+      };
+    };
+    const rows = organizationMetrics([
+      { ...vercel('avec-regle'), deployRule: { productionEnvironments: ['Production – ui'] } },
+      { ...vercel('sans-regle'), deployRule: { forme: 'inconnue' } },
+    ]);
+    const frequency = (repositoryId: string | null) =>
+      rows.find(
+        (r) => r.repositoryId === repositoryId && r.metricKey === METRIC_KEYS.deploymentFrequency,
+      );
+    expect(frequency('avec-regle')?.value).toBe(1);
+    expect(frequency('sans-regle')).toBeUndefined();
+    expect(frequency(null)?.value).toBe(1);
+  });
+
   it('ne renvoie rien sans dépôt suivi', () => {
     expect(organizationMetrics([])).toEqual([]);
   });

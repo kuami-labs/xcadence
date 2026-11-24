@@ -5,10 +5,10 @@ La base compte 14 tables en trois groupes : les comptes, les données brutes cop
 | Table                | Groupe    | Colonnes principales                                                                                                                                             | Rôle                                                                |
 | -------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | `users`              | Comptes   | id, github_id, login, email, avatar_url                                                                                                                          | Personne qui se connecte                                            |
-| `organizations`      | Comptes   | id, github_org_id, name, installation_id                                                                                                                         | Organisation GitHub connectée                                       |
+| `organizations`      | Comptes   | id, github_org_id, name, installation_id, is_demo                                                                                                                | Organisation GitHub connectée                                       |
 | `memberships`        | Comptes   | user_id, organization_id, role (owner, member)                                                                                                                   | Qui voit quelle organisation                                        |
 | `sessions`           | Comptes   | id, token_hash (unique), user_id, expires_at                                                                                                                     | Sessions de connexion ([ADR 0003](adr/0003-sessions-postgresql.md)) |
-| `repositories`       | Brutes    | id, organization_id, github_repo_id, name, default_branch, is_tracked, deploy_rule                                                                               | Dépôts suivis et règle de détection des déploiements                |
+| `repositories`       | Brutes    | id, organization_id, github_repo_id, owner, name, default_branch, is_tracked, deploy_rule                                                                        | Dépôts suivis et règle de détection des déploiements                |
 | `pull_requests`      | Brutes    | id, repository_id, github_pr_id, number, author_login, state, is_draft, created_at, first_commit_at, first_review_at, merged_at, closed_at, additions, deletions | Base des délais et goulots                                          |
 | `reviews`            | Brutes    | id, pull_request_id, github_review_id, reviewer_login, state, submitted_at                                                                                       | Temps avant première revue                                          |
 | `deployments`        | Brutes    | id, repository_id, github_deployment_id, sha, environment, status, created_at, finished_at                                                                       | Fréquence, échecs, rétablissement                                   |
@@ -22,6 +22,10 @@ La base compte 14 tables en trois groupes : les comptes, les données brutes cop
 ## Règle de déploiement (`repositories.deploy_rule`)
 
 JSON `{ "productionEnvironments": ["Production – ui"] }` : les environnements GitHub comptés comme production pour ce dépôt, comparés sans tenir compte de la casse (10 au plus). `null` : règle par défaut, `production` ou `prod`. Le format laisse de la place à d'autres sources (workflow, tag) pour les équipes sans API Deployments.
+
+## Organisation de démo
+
+Une seule organisation a `is_demo = true` (et `github_org_id = 0`, identifiant qu'aucun compte GitHub ne porte). Elle n'a ni installation, ni membre, ni webhook : ses dépôts sont des dépôts **publics** de tiers (`repositories.owner` = leur propriétaire GitHub), importés avec le jeton de l'installation `DEMO_INSTALLATION_ID`. Un dépôt privé est toujours refusé.
 
 ## Relations
 

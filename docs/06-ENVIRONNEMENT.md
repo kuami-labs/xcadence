@@ -234,6 +234,8 @@ GITHUB_APP_CLIENT_SECRET=
 GITHUB_APP_PRIVATE_KEY_PATH=./.secrets/github-app.pem
 # Nom de la GitHub App dans son adresse (github.com/apps/NOM) : lien d'installation de l'onboarding
 GITHUB_APP_SLUG=
+# Démo publique (#81) : installation dont le jeton lit les dépôts publics de la démo ; vide = démo désactivée
+DEMO_INSTALLATION_ID=
 GITHUB_WEBHOOK_SECRET=
 
 # Résumé IA : fake | openai | anthropic (ADR 0004)

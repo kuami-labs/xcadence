@@ -68,6 +68,17 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 | `send-notifications`       | Après chaque résumé écrit          | Crée un `send-summary-email` par destinataire, une seule fois (`sent_at`)            |
 | `send-summary-email`       | `send-notifications`               | Envoie un email par SMTP (Mailpit en dev, Resend en production : ADR 0005), 3 essais |
 
+## Démo publique
+
+Dépôts publics de tiers dans l'organisation de démo (docs/05-DATABASE.md), ajoutés en ligne de commande, le worker tournant :
+
+```bash
+pnpm --filter @xcadence/worker demo:add dubinc/dub --production "Production"
+pnpm --filter @xcadence/worker demo:add shadcn-ui/ui --production "Production – ui"
+```
+
+La commande vérifie que le dépôt est public, l'ajoute (ou met à jour sa règle de production) et met en file son import des 90 derniers jours. Tout worker qui traite ces imports doit avoir `DEMO_INSTALLATION_ID` : sans lui, le job échoue (et est réessayé) au lieu d'être ignoré.
+
 ## Sécurité
 
 - GitHub App en lecture seule ; aucun accès en écriture au code.

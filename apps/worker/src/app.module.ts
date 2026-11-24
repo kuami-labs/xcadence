@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { GithubModule } from './github/github.module.js';
 import { SyncModule } from './sync/sync.module.js';
 import { MetricsModule } from './metrics/metrics.module.js';
+import { InsightsModule } from './insights/insights.module.js';
 
 // Les modules de jobs BullMQ (import, métriques, résumés, emails) arrivent ici : docs/03-BACKEND.md.
 @Module({
@@ -27,6 +28,7 @@ import { MetricsModule } from './metrics/metrics.module.js';
     GithubModule,
     SyncModule,
     MetricsModule,
+    InsightsModule,
   ],
 })
 export class AppModule {}

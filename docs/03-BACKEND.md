@@ -55,13 +55,13 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Jobs BullMQ
 
-| Job                        | Déclencheur                        | Rôle                                                 |
-| -------------------------- | ---------------------------------- | ---------------------------------------------------- |
-| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs |
-| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées             |
-| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                           |
-| `generate-weekly-summary`  | Lundi 7 h                          | Génère le résumé IA de la semaine                    |
-| `send-notifications`       | Après le résumé ou une alerte      | Envoie les emails                                    |
+| Job                        | Déclencheur                        | Rôle                                                                               |
+| -------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------- |
+| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs                               |
+| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées                                           |
+| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                                                         |
+| `generate-weekly-summary`  | Lundi 7 h UTC                      | Génère le résumé IA de la semaine écoulée, vérifié, ou un repli sans IA (ADR 0004) |
+| `send-notifications`       | Après le résumé ou une alerte      | Envoie les emails                                                                  |
 
 ## Sécurité
 

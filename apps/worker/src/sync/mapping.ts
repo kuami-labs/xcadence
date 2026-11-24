@@ -86,3 +86,27 @@ export function pullRequestData(
     deletions: pr.deletions ?? 0,
   };
 }
+
+/** Champs utilisés d'un run GitHub Actions (actions.listWorkflowRunsForRepo). */
+export interface GithubWorkflowRun {
+  id: number;
+  name?: string | null;
+  head_branch: string | null;
+  status: string | null;
+  conclusion: string | null;
+  created_at: string;
+  updated_at: string;
+  run_started_at?: string;
+}
+
+/** Données d'un run pour la table workflow_runs (métrique « Durée de la CI »). */
+export function workflowRunData(run: GithubWorkflowRun) {
+  return {
+    workflowName: run.name ?? 'sans nom',
+    branch: run.head_branch ?? '',
+    conclusion: run.conclusion,
+    startedAt: new Date(run.run_started_at ?? run.created_at),
+    // Fin du run : dernière mise à jour une fois terminé ; null tant qu'il tourne.
+    completedAt: run.status === 'completed' ? new Date(run.updated_at) : null,
+  };
+}

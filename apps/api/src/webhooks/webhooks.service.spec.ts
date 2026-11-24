@@ -9,6 +9,7 @@ describe('WebhooksService', () => {
   const createMany = vi.fn();
   const findUniqueOrThrow = vi.fn();
   const add = vi.fn();
+  const getJob = vi.fn();
   const event = { deliveryId: 'd1', eventType: 'ping', payload: {} };
 
   beforeEach(async () => {
@@ -20,7 +21,7 @@ describe('WebhooksService', () => {
           provide: PrismaService,
           useValue: { client: { webhookEvent: { createMany, findUniqueOrThrow } } },
         },
-        { provide: getQueueToken(QUEUES.webhooks), useValue: { add } },
+        { provide: getQueueToken(QUEUES.webhooks), useValue: { add, getJob } },
       ],
     }).compile();
     service = module.get<WebhooksService>(WebhooksService);
@@ -47,6 +48,37 @@ describe('WebhooksService', () => {
       { webhookEventId: 'e1' },
       expect.objectContaining({ jobId: 'e1' }),
     );
+  });
+
+  it('retire un ancien job terminé avant de remettre en file un événement non traité', async () => {
+    createMany.mockResolvedValue({ count: 0 });
+    findUniqueOrThrow.mockResolvedValue({ id: 'e1', processedAt: null });
+    const remove = vi.fn();
+    getJob.mockResolvedValue({
+      isCompleted: vi.fn().mockResolvedValue(true),
+      isFailed: vi.fn().mockResolvedValue(false),
+      remove,
+    });
+    await service.record(event);
+    expect(remove).toHaveBeenCalled();
+    expect(add).toHaveBeenCalledWith(
+      JOBS.processWebhookEvent,
+      { webhookEventId: 'e1' },
+      expect.objectContaining({ jobId: 'e1' }),
+    );
+  });
+
+  it('garde un job encore en attente (pas de doublon)', async () => {
+    createMany.mockResolvedValue({ count: 0 });
+    findUniqueOrThrow.mockResolvedValue({ id: 'e1', processedAt: null });
+    const remove = vi.fn();
+    getJob.mockResolvedValue({
+      isCompleted: vi.fn().mockResolvedValue(false),
+      isFailed: vi.fn().mockResolvedValue(false),
+      remove,
+    });
+    await service.record(event);
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it("n'enfile pas un rejeu déjà traité", async () => {

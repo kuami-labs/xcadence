@@ -5,6 +5,7 @@ import type {
   BottlenecksResponse,
   MetricKey,
   MetricsResponse,
+  SyncStatusResponse,
 } from '@xcadence/shared';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { MetricsQueryDto } from './metrics-query.dto.js';
@@ -101,5 +102,23 @@ export class DashboardService {
       LIMIT 10`;
 
     return { awaitingReview, oldPullRequests, slowWorkflows };
+  }
+
+  /** Imports récents de l'organisation (suivi de l'onboarding). */
+  async syncStatus(organizationId: string): Promise<SyncStatusResponse> {
+    const jobs = await this.prisma.client.syncJob.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+    return {
+      inProgress: jobs.some((j) => j.status === 'queued' || j.status === 'running'),
+      jobs: jobs.map((j) => ({
+        type: j.type,
+        status: j.status,
+        startedAt: j.startedAt?.toISOString() ?? null,
+        finishedAt: j.finishedAt?.toISOString() ?? null,
+      })),
+    };
   }
 }

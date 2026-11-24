@@ -53,6 +53,12 @@ export class RepositoriesService {
       select: publicFields,
     });
     if (dto.isTracked && !current.isTracked) {
+      // Un ancien import terminé garde son identifiant dans Redis et bloquerait le nouveau :
+      // suivre de nouveau un dépôt doit relancer son import.
+      const previous = await this.sync.getJob(`backfill-${id}`);
+      if (previous && ((await previous.isCompleted()) || (await previous.isFailed()))) {
+        await previous.remove();
+      }
       await this.sync.add(
         JOBS.backfillRepository,
         { repositoryId: id },

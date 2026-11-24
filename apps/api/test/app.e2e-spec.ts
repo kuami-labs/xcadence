@@ -20,6 +20,21 @@ describe('API (e2e)', () => {
     return request(app.getHttpServer()).get('/health').expect(200).expect({ status: 'ok' });
   });
 
+  it('/config (GET) : adresse d’installation de la GitHub App', async () => {
+    const previous = process.env.GITHUB_APP_SLUG;
+    process.env.GITHUB_APP_SLUG = 'mon-app';
+    await request(app.getHttpServer())
+      .get('/config')
+      .expect(200)
+      .expect({ githubAppInstallUrl: 'https://github.com/apps/mon-app/installations/new' });
+    delete process.env.GITHUB_APP_SLUG;
+    await request(app.getHttpServer())
+      .get('/config')
+      .expect(200)
+      .expect({ githubAppInstallUrl: null });
+    if (previous !== undefined) process.env.GITHUB_APP_SLUG = previous;
+  });
+
   afterEach(async () => {
     await app.close();
   });

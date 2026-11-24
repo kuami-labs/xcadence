@@ -9,6 +9,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { WebhooksModule } from './webhooks/webhooks.module.js';
 import { RepositoriesModule } from './repositories/repositories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
+import { ConfigController } from './config.controller.js';
 
 @Module({
   imports: [
@@ -31,6 +32,6 @@ import { DashboardModule } from './dashboard/dashboard.module.js';
     RepositoriesModule,
     DashboardModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ConfigController],
 })
 export class AppModule {}

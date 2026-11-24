@@ -171,6 +171,30 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
       ]);
     });
 
+    it("donne l'avancement des imports", async () => {
+      await prisma.syncJob.create({
+        data: {
+          organizationId: orgId,
+          type: 'backfill',
+          status: 'succeeded',
+          startedAt: ago(1),
+          finishedAt: ago(1),
+        },
+      });
+      let res = await get(`/orgs/${orgId}/sync-status`).expect(200);
+      expect(res.body.inProgress).toBe(false);
+      await prisma.syncJob.create({
+        data: { organizationId: orgId, type: 'backfill', status: 'running', startedAt: ago(0) },
+      });
+      res = await get(`/orgs/${orgId}/sync-status`).expect(200);
+      expect(res.body.inProgress).toBe(true);
+      expect(res.body.jobs.map((j: { status: string }) => j.status)).toEqual([
+        'running',
+        'succeeded',
+      ]);
+      await get(`/orgs/${otherOrgId}/sync-status`).expect(403);
+    });
+
     it("ne donne jamais accès aux données d'une autre organisation", async () => {
       await get(`/orgs/${otherOrgId}/metrics`).expect(403);
       await get(`/orgs/${otherOrgId}/bottlenecks`).expect(403);

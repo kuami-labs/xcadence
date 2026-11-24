@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { redisConnection } from '@xcadence/shared';
 import { Redis } from 'ioredis';
 import { WebhooksModule } from './webhooks/webhooks.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 
 // Les modules de jobs BullMQ (import, métriques, résumés, emails) arrivent ici : docs/03-BACKEND.md.
 @Module({
@@ -19,6 +20,7 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
       }),
     }),
     WebhooksModule,
+    PrismaModule,
   ],
 })
 export class AppModule {}

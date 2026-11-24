@@ -5,6 +5,7 @@ import { Redis } from 'ioredis';
 import { WebhooksModule } from './webhooks/webhooks.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { GithubModule } from './github/github.module.js';
+import { SyncModule } from './sync/sync.module.js';
 
 // Les modules de jobs BullMQ (import, métriques, résumés, emails) arrivent ici : docs/03-BACKEND.md.
 @Module({
@@ -23,6 +24,7 @@ import { GithubModule } from './github/github.module.js';
     WebhooksModule,
     PrismaModule,
     GithubModule,
+    SyncModule,
   ],
 })
 export class AppModule {}

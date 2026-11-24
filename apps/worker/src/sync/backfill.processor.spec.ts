@@ -1,0 +1,156 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { JOBS } from '@xcadence/shared';
+import type { Job } from 'bullmq';
+import { GithubService } from '../github/github.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { BackfillProcessor } from './backfill.processor.js';
+import { PullRequestsImporter } from './pull-requests.importer.js';
+
+const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
+
+/** Faux client Octokit : réponses fixes, aucun appel à GitHub. */
+function fakeOctokit(base: number) {
+  const pr = (n: number, updatedDaysAgo: number, merged: boolean) => ({
+    id: base + n,
+    number: n,
+    state: merged ? 'closed' : 'open',
+    draft: false,
+    user: { id: 1, login: 'auteur' },
+    created_at: daysAgo(updatedDaysAgo + 1),
+    updated_at: daysAgo(updatedDaysAgo),
+    merged_at: merged ? daysAgo(updatedDaysAgo) : null,
+    closed_at: merged ? daysAgo(updatedDaysAgo) : null,
+    additions: 10 * n,
+    deletions: n,
+  });
+  // Deux pages, triées par mise à jour décroissante ; la PR 3 a plus de 90 jours.
+  const pages = [[pr(1, 2, true), pr(2, 10, false)], [pr(3, 120, true)]];
+  const all = pages.flat();
+  const reviewsOf: Record<number, unknown[]> = {
+    1: [
+      {
+        id: base + 101,
+        state: 'APPROVED',
+        user: { id: 2, login: 'relecteur' },
+        submitted_at: daysAgo(2),
+      },
+    ],
+    2: [],
+  };
+  const rest = {
+    repos: { get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }) },
+    pulls: {
+      list: vi.fn(),
+      get: vi.fn(async ({ pull_number }: { pull_number: number }) => ({
+        data: all.find((p) => p.number === pull_number),
+      })),
+      listCommits: vi.fn(),
+      listReviews: vi.fn(),
+    },
+  };
+  const paginate = Object.assign(
+    vi.fn(async (fn: unknown, params: { pull_number: number }) => {
+      if (fn === rest.pulls.listReviews) return reviewsOf[params.pull_number] ?? [];
+      return [{ commit: { author: { date: daysAgo(5) }, committer: null } }];
+    }),
+    {
+      iterator: vi.fn(async function* () {
+        for (const data of pages) yield { data };
+      }),
+    },
+  );
+  return { rest, paginate };
+}
+
+// Intégration sur PostgreSQL (DATABASE_URL), comme dans la CI.
+describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
+  let module: TestingModule;
+  let processor: BackfillProcessor;
+  let prisma: PrismaService['client'];
+  const base = Date.now() * 100;
+  const octokit = fakeOctokit(base);
+  const github = { forInstallation: vi.fn().mockResolvedValue(octokit) };
+  let repoId: string;
+  let orgId: string;
+
+  const job = (repositoryId: string, name: string = JOBS.backfillRepository) =>
+    ({ name, data: { repositoryId } }) as Job;
+
+  beforeAll(async () => {
+    module = await Test.createTestingModule({
+      providers: [
+        BackfillProcessor,
+        PullRequestsImporter,
+        PrismaService,
+        { provide: GithubService, useValue: github },
+      ],
+    }).compile();
+    processor = module.get(BackfillProcessor);
+    prisma = module.get(PrismaService).client;
+    const org = await prisma.organization.create({
+      data: { githubOrgId: BigInt(base), name: 'org-test', installationId: BigInt(base) },
+    });
+    orgId = org.id;
+    repoId = (
+      await prisma.repository.create({
+        data: {
+          organizationId: org.id,
+          githubRepoId: BigInt(base),
+          name: 'depot',
+          isTracked: true,
+        },
+      })
+    ).id;
+  });
+
+  afterAll(async () => {
+    await prisma.organization.deleteMany({ where: { id: orgId } });
+    await module.close();
+  });
+
+  it('importe 90 jours de PR et de revues, et le note dans sync_jobs', async () => {
+    await expect(processor.process(job(repoId))).resolves.toEqual({ pullRequests: 2 });
+
+    const prs = await prisma.pullRequest.findMany({
+      where: { repositoryId: repoId },
+      orderBy: { number: 'asc' },
+      include: { reviews: true },
+    });
+    expect(prs.map((p) => [p.number, p.state])).toEqual([
+      [1, 'merged'],
+      [2, 'open'],
+    ]);
+    expect(prs[0].reviews).toHaveLength(1);
+    expect(prs[0].firstReviewAt).not.toBeNull();
+    expect(prs[0].firstCommitAt).not.toBeNull();
+    expect(prs[0].additions).toBe(10);
+
+    const repo = await prisma.repository.findUniqueOrThrow({ where: { id: repoId } });
+    expect(repo.defaultBranch).toBe('main');
+    const syncJobs = await prisma.syncJob.findMany({ where: { organizationId: orgId } });
+    expect(syncJobs.map((s) => [s.type, s.status])).toEqual([['backfill', 'succeeded']]);
+  });
+
+  it('un import rejoué ne crée aucun doublon', async () => {
+    await processor.process(job(repoId));
+    expect(await prisma.pullRequest.count({ where: { repositoryId: repoId } })).toBe(2);
+    expect(await prisma.review.count({ where: { pullRequest: { repositoryId: repoId } } })).toBe(1);
+  });
+
+  it("note l'échec dans sync_jobs et laisse BullMQ réessayer", async () => {
+    octokit.rest.repos.get.mockRejectedValueOnce(new Error('GitHub indisponible'));
+    await expect(processor.process(job(repoId))).rejects.toThrow('GitHub indisponible');
+    const failed = await prisma.syncJob.findFirst({
+      where: { organizationId: orgId, status: 'failed' },
+    });
+    expect(failed?.error).toBe('GitHub indisponible');
+  });
+
+  it('ignore un dépôt non suivi et un job inconnu', async () => {
+    await prisma.repository.update({ where: { id: repoId }, data: { isTracked: false } });
+    await expect(processor.process(job(repoId))).resolves.toEqual({
+      skipped: 'dépôt absent ou non suivi',
+    });
+    await expect(processor.process(job(repoId, 'autre'))).rejects.toThrow('Job inconnu');
+  });
+});

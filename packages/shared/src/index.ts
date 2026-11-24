@@ -4,3 +4,4 @@ export interface HealthResponse {
 }
 
 export * from './queues.js';
+export * from './repositories.js';

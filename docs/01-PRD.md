@@ -41,7 +41,7 @@ La v1 sert un seul rôle prioritaire, le CTO, sur une seule source, GitHub.
 | --- | ------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------- | -------- |
 | F1  | Connexion GitHub          | En tant que CTO, je connecte mon organisation via une GitHub App et je choisis les dépôts suivis | Installation en moins de 2 min, dépôts listés         | Must     |
 | F2  | Import et synchronisation | En tant que CTO, je vois 90 jours d'historique dès la connexion, puis les nouveautés en continu  | Import initial < 10 min ; webhooks traités < 1 min    | Must     |
-| F3  | Tableau de bord DORA      | En tant que CTO, je vois les 4 métriques DORA, leur tendance et leur niveau (Elite à Low)        | Filtres par dépôt et période (4, 12 semaines)         | Must     |
+| F3  | Tableau de bord DORA      | En tant que CTO, je vois les 4 métriques DORA et leur tendance                                   | Filtres par dépôt et période (4, 12 semaines)         | Must     |
 | F4  | Goulots d'étranglement    | En tant que Tech Lead, je vois les PR bloquées, les revues lentes et la CI qui ralentit          | Liste des PR en attente > 48 h, tri par ancienneté    | Must     |
 | F5  | Résumé hebdomadaire IA    | En tant que CTO, je reçois chaque lundi 5 lignes qui disent ce qui a changé et quoi regarder     | Chaque phrase cite un chiffre réel du tableau de bord | Should   |
 | F6  | Alertes                   | En tant que CTO, je suis prévenu quand une métrique se dégrade fortement                         | Seuil configurable, email ou Slack                    | Could    |
@@ -84,7 +84,7 @@ Le PRD prévoyait de vérifier les seuils sur la dernière édition du rapport a
 - DORA suit désormais **cinq métriques** : délai de livraison (_change lead time_), fréquence de déploiement, temps de rétablissement après un déploiement en échec (_failed deployment recovery time_), taux d'échec des changements (_change fail rate_) et **taux de reprise des déploiements** (_deployment rework rate_, nouveau).
 - Le guide DORA met en garde contre le **classement** et la **comparaison** d'équipes, et contre le mélange des métriques de contextes différents.
 
-**Décision à prendre** : afficher un niveau (avec les seuils 2024, datés), ou le remplacer par la tendance par rapport à la période précédente.
+**Décision (novembre 2026)** : pas de niveau Elite à Low. Chaque métrique affiche sa valeur et sa **tendance** par rapport à la période précédente ; l'objectif est que chaque équipe progresse, pas de la comparer.
 
 Sources : [guide des métriques DORA](https://dora.dev/guides/dora-metrics-four-keys/), [mise à jour du Quick Check](https://dora.dev/insights/quickcheck-updates/), [rapport 2024](https://dora.dev/research/2024/dora-report/), [rapport 2025](https://cloud.google.com/resources/content/2025-dora-ai-assisted-software-development-report).
 

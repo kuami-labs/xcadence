@@ -4,31 +4,70 @@ import { JOBS, QUEUES, redisConnection } from '@xcadence/shared';
 import { Queue, QueueEvents, type Job } from 'bullmq';
 import { Redis } from 'ioredis';
 import { AppModule } from '../app.module.js';
+import type { PrismaService } from '../prisma/prisma.service.js';
+import type { InstallationHandler } from './installation.handler.js';
 import { WebhookEventsProcessor } from './webhook-events.processor.js';
 
+const jobFor = (webhookEventId: string) =>
+  ({ name: JOBS.processWebhookEvent, data: { webhookEventId } }) as Job;
+
 describe('WebhookEventsProcessor', () => {
+  const findUnique = vi.fn();
+  const update = vi.fn();
+  const handle = vi.fn();
+  const processor = new WebhookEventsProcessor(
+    { client: { webhookEvent: { findUnique, update } } } as unknown as PrismaService,
+    { handle } as unknown as InstallationHandler,
+  );
+
+  beforeEach(() => vi.clearAllMocks());
+
   it('refuse un job inconnu', async () => {
-    const processor = new WebhookEventsProcessor();
     await expect(processor.process({ name: 'autre', data: {} } as Job)).rejects.toThrow(
       'Job inconnu',
     );
   });
 
-  // Intégration : nécessite Redis (REDIS_URL), comme dans la CI.
-  describe.skipIf(!process.env.REDIS_URL)('avec Redis', () => {
+  it('traite un événement géré et le marque traité', async () => {
+    findUnique.mockResolvedValue({
+      id: 'e1',
+      eventType: 'installation',
+      payload: {},
+      processedAt: null,
+    });
+    handle.mockResolvedValue(true);
+    await expect(processor.process(jobFor('e1'))).resolves.toBe('processed');
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'e1' },
+      data: { processedAt: expect.any(Date) },
+    });
+  });
+
+  it('laisse non traité un événement pas encore géré', async () => {
+    findUnique.mockResolvedValue({ id: 'e1', eventType: 'push', payload: {}, processedAt: null });
+    handle.mockResolvedValue(false);
+    await expect(processor.process(jobFor('e1'))).resolves.toBe('ignored');
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('ne retraite pas un événement déjà traité', async () => {
+    findUnique.mockResolvedValue({ id: 'e1', eventType: 'installation', processedAt: new Date() });
+    await expect(processor.process(jobFor('e1'))).resolves.toBe('already-processed');
+    expect(handle).not.toHaveBeenCalled();
+  });
+
+  // Intégration : Redis et PostgreSQL réels, comme dans la CI.
+  describe.skipIf(!process.env.REDIS_URL || !process.env.DATABASE_URL)('avec Redis', () => {
     let app: TestingModule;
     let queue: Queue;
     let events: QueueEvents;
+    const connection = () => new Redis({ ...redisConnection(), maxRetriesPerRequest: null });
 
     beforeAll(async () => {
       app = await Test.createTestingModule({ imports: [AppModule] }).compile();
       await app.init();
-      queue = new Queue(QUEUES.webhooks, {
-        connection: new Redis({ ...redisConnection(), maxRetriesPerRequest: null }),
-      });
-      events = new QueueEvents(QUEUES.webhooks, {
-        connection: new Redis({ ...redisConnection(), maxRetriesPerRequest: null }),
-      });
+      queue = new Queue(QUEUES.webhooks, { connection: connection() });
+      events = new QueueEvents(QUEUES.webhooks, { connection: connection() });
       await events.waitUntilReady();
     });
 
@@ -39,9 +78,9 @@ describe('WebhookEventsProcessor', () => {
     });
 
     it('reçoit un job publié dans la file', async () => {
-      const webhookEventId = randomUUID();
-      const job = await queue.add(JOBS.processWebhookEvent, { webhookEventId });
-      await expect(job.waitUntilFinished(events, 10_000)).resolves.toEqual({ webhookEventId });
+      const job = await queue.add(JOBS.processWebhookEvent, { webhookEventId: randomUUID() });
+      // Identifiant inconnu en base : le worker a bien reçu le job et l'a signalé.
+      await expect(job.waitUntilFinished(events, 10_000)).resolves.toBe('missing');
     });
   });
 });

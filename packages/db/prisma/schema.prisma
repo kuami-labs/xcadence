@@ -105,7 +105,8 @@ model Repository {
   organizationId String         @map("organization_id") @db.Uuid
   githubRepoId   BigInt         @unique @map("github_repo_id")
   name           String
-  defaultBranch  String         @map("default_branch")
+  /// Inconnue tant que le dépôt n'a pas été importé : les webhooks d'installation ne la donnent pas.
+  defaultBranch  String?        @map("default_branch")
   isTracked      Boolean        @default(false) @map("is_tracked")
   /// Règle de détection des déploiements (question ouverte du PRD) : forme libre pour l'instant.
   deployRule     Json?          @map("deploy_rule")

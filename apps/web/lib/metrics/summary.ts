@@ -44,6 +44,38 @@ export const DORA_CARDS: MetricDefinition[] = [
   },
 ];
 
+/** Métriques de flux, affichées sur la page d'un dépôt. */
+export const FLOW_CARDS: MetricDefinition[] = [
+  {
+    key: METRIC_KEYS.timeToFirstReview,
+    label: 'Temps avant première revue',
+    unit: 'h',
+    better: 'lower',
+    aggregate: 'weighted',
+  },
+  {
+    key: METRIC_KEYS.prLifetime,
+    label: 'Durée de vie des PR',
+    unit: 'h',
+    better: 'lower',
+    aggregate: 'weighted',
+  },
+  {
+    key: METRIC_KEYS.ciDurationP50,
+    label: 'Durée de la CI (médiane)',
+    unit: 'min',
+    better: 'lower',
+    aggregate: 'weighted',
+  },
+  {
+    key: METRIC_KEYS.ciDurationP90,
+    label: 'Durée de la CI (p90)',
+    unit: 'min',
+    better: 'lower',
+    aggregate: 'weighted',
+  },
+];
+
 /** Lundi (UTC) de la semaine d'une date, au format AAAA-MM-JJ. */
 export function mondayOf(date: Date): string {
   const day = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));

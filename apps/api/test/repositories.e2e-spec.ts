@@ -107,6 +107,42 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
         .expect(400);
     });
 
+    it('liste les PR récentes d’un dépôt, sans auteur', async () => {
+      await prisma.pullRequest.create({
+        data: {
+          repositoryId: repoId,
+          githubPrId: base,
+          number: 7,
+          authorLogin: 'quelquun',
+          state: 'merged',
+          createdAt: new Date('2026-11-23T08:00:00Z'),
+          firstReviewAt: new Date('2026-11-23T10:30:00Z'),
+          mergedAt: new Date('2026-11-23T12:00:00Z'),
+          additions: 10,
+          deletions: 4,
+        },
+      });
+      const res = await api()
+        .get(`/orgs/${orgId}/repositories/${repoId}/pull-requests`)
+        .set('cookie', cookie())
+        .expect(200);
+      expect(res.body).toEqual([
+        {
+          number: 7,
+          state: 'merged',
+          isDraft: false,
+          createdAt: '2026-11-23T08:00:00.000Z',
+          mergedAt: '2026-11-23T12:00:00.000Z',
+          size: 14,
+          timeToFirstReviewHours: 2.5,
+        },
+      ]);
+      await api()
+        .get(`/orgs/${orgId}/repositories/${otherRepoId}/pull-requests`)
+        .set('cookie', cookie())
+        .expect(404);
+    });
+
     it("ne donne accès ni aux dépôts ni à l'organisation d'un autre", async () => {
       await api().get(`/orgs/${otherOrgId}/repositories`).set('cookie', cookie()).expect(403);
       await api()

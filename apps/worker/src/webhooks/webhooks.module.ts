@@ -7,6 +7,7 @@ import { WebhookEventsProcessor } from './webhook-events.processor.js';
 import { InstallationHandler } from './installation.handler.js';
 import { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
+import { DeploymentStatusEventsHandler } from './deployment-status-events.handler.js';
 
 @Module({
   imports: [BullModule.registerQueue({ name: QUEUES.webhooks }), GithubModule, SyncModule],
@@ -15,6 +16,7 @@ import { WorkflowRunEventsHandler } from './workflow-run-events.handler.js';
     InstallationHandler,
     PullRequestEventsHandler,
     WorkflowRunEventsHandler,
+    DeploymentStatusEventsHandler,
   ],
 })
 export class WebhooksModule {}

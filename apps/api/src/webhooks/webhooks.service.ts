@@ -34,6 +34,12 @@ export class WebhooksService {
     // Enfilé tant que l'événement n'est pas traité : si Redis était indisponible au premier
     // envoi, le rejeu de GitHub le remet en file. jobId = id de l'événement : jamais deux jobs.
     if (!stored.processedAt) {
+      // Un job terminé garde son identifiant dans Redis et bloquerait un nouvel ajout : un événement
+      // resté non traité (gestionnaire arrivé depuis, rejeu manuel) doit pouvoir repasser en file.
+      const previous = await this.queue.getJob(stored.id);
+      if (previous && ((await previous.isCompleted()) || (await previous.isFailed()))) {
+        await previous.remove();
+      }
       await this.queue.add(
         JOBS.processWebhookEvent,
         { webhookEventId: stored.id },

@@ -1,3 +1,5 @@
+import type { MetricKey } from '@xcadence/shared';
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 export const HOUR_MS = 60 * 60 * 1000;
 export const MINUTE_MS = 60 * 1000;
@@ -38,3 +40,28 @@ export function groupByWeek<T>(items: T[], dateOf: (item: T) => Date): Map<strin
   }
   return groups;
 }
+
+/** Une valeur hebdomadaire, prête pour weekly_metrics. */
+export interface MetricPoint {
+  weekStart: Date;
+  metricKey: MetricKey;
+  value: number;
+  sampleSize: number;
+}
+
+export const byWeek = (
+  groups: Map<string, number[]>,
+  metricKey: MetricKey,
+  stat: (v: number[]) => number | null,
+) =>
+  [...groups.entries()]
+    .map(([week, values]) => ({
+      weekStart: new Date(week),
+      metricKey,
+      value: stat(values) as number,
+      sampleSize: values.length,
+    }))
+    .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
+
+export const toValues = <T>(groups: Map<string, T[]>, value: (item: T) => number) =>
+  new Map([...groups].map(([week, items]) => [week, items.map(value)]));

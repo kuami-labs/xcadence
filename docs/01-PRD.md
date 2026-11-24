@@ -61,6 +61,20 @@ Toutes les métriques sont calculées par semaine et par dépôt, à partir des 
 | Durée de vie des PR                 | Temps entre l'ouverture et la fusion d'une PR                                    | PR                                                               | heures (médiane)       |
 | Durée de la CI                      | Durée des runs GitHub Actions sur la branche principale                          | Workflow runs                                                    | minutes (p50 et p90)   |
 
+### Définitions retenues pour le calcul
+
+Les calculs vivent dans `apps/worker/src/metrics`, couverts à 100 % par des tests.
+
+- **Semaine** : du lundi 00:00 UTC au dimanche ; chaque valeur garde son nombre d'éléments (`sample_size`).
+- **Production** : environnement `production` ou `prod` (une règle par dépôt viendra avec `deploy_rule`). Un déploiement **réussi** a le statut `success`, ou `inactive` (réussi puis remplacé) ; **en échec** : `failure` ou `error`. Les déploiements non terminés sont ignorés.
+- **Fréquence de déploiement** : déploiements réussis en production, par semaine.
+- **Délai de livraison** : premier commit de la PR (son ouverture à défaut) → premier déploiement réussi en production **après sa fusion** ; semaine du déploiement. Sans lien commit par commit, c'est une approximation.
+- **Taux d'échec des changements** : un changement échoue s'il est en échec, ou s'il est **annulé par un rollback** : redéploiement, sous 48 h, d'un commit déjà déployé avant lui. Les hotfix et reverts ne sont pas encore détectés : XCadence ne stocke ni titres ni labels de PR.
+- **Temps de rétablissement** : déploiement en échec (ou annulé) → déploiement réussi suivant ; semaine de l'échec ; les échecs pas encore rétablis sont exclus.
+- **Temps avant première revue** : par semaine d'ouverture ; brouillons et PR sans revue exclus ; les revues de l'auteur ne comptent pas.
+- **Durée de vie des PR** : ouverture → fusion, par semaine de fusion.
+- **Durée de la CI** : runs terminés sur la branche principale, p50 et p90, par semaine de démarrage.
+
 Les niveaux Elite, High, Medium et Low suivent les seuils publiés par le programme DORA ; ils seront vérifiés sur la dernière édition du rapport avant l'implémentation.
 
 Les médianes sont préférées aux moyennes : une PR oubliée un mois ne doit pas fausser toute la semaine.

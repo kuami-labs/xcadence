@@ -13,10 +13,10 @@ const jobFor = (webhookEventId: string) =>
 
 describe('WebhookEventsProcessor', () => {
   const findUnique = vi.fn();
-  const update = vi.fn();
+  const updateMany = vi.fn();
   const handle = vi.fn();
   const processor = new WebhookEventsProcessor(
-    { client: { webhookEvent: { findUnique, update } } } as unknown as PrismaService,
+    { client: { webhookEvent: { findUnique, updateMany } } } as unknown as PrismaService,
     { handle } as unknown as InstallationHandler,
   );
 
@@ -37,7 +37,7 @@ describe('WebhookEventsProcessor', () => {
     });
     handle.mockResolvedValue(true);
     await expect(processor.process(jobFor('e1'))).resolves.toBe('processed');
-    expect(update).toHaveBeenCalledWith({
+    expect(updateMany).toHaveBeenCalledWith({
       where: { id: 'e1' },
       data: { processedAt: expect.any(Date) },
     });
@@ -47,7 +47,7 @@ describe('WebhookEventsProcessor', () => {
     findUnique.mockResolvedValue({ id: 'e1', eventType: 'push', payload: {}, processedAt: null });
     handle.mockResolvedValue(false);
     await expect(processor.process(jobFor('e1'))).resolves.toBe('ignored');
-    expect(update).not.toHaveBeenCalled();
+    expect(updateMany).not.toHaveBeenCalled();
   });
 
   it('ne retraite pas un événement déjà traité', async () => {

@@ -47,6 +47,10 @@ export class InstallationHandler {
       });
       return true;
     }
+    if (eventType === 'installation' && payload.action === 'deleted') {
+      await this.deleteOrganization(payload.installation);
+      return true;
+    }
     if (eventType === 'installation_repositories') {
       await this.prisma.client.$transaction(async (tx) => {
         const orgId = await this.upsertOrganization(tx, payload);
@@ -62,6 +66,25 @@ export class InstallationHandler {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Désinstallation : suppression complète (docs/01-PRD.md, RGPD).
+   * L'organisation entraîne en cascade appartenances, dépôts, PR, revues, runs, déploiements,
+   * métriques, résumés et imports ; les webhooks reçus de cette installation sont aussi supprimés.
+   * Les comptes utilisateurs restent : ils peuvent appartenir à d'autres organisations.
+   */
+  private async deleteOrganization(installation: InstallationPayload['installation']) {
+    await this.prisma.client.$transaction([
+      this.prisma.client.organization.deleteMany({
+        where: { githubOrgId: BigInt(installation.account.id) },
+      }),
+      this.prisma.client.webhookEvent.deleteMany({
+        where: { payload: { path: ['installation', 'id'], equals: installation.id } },
+      }),
+    ]);
+    // Aucun login dans les logs : seulement l'identifiant de l'installation.
+    this.logger.log(`Données de l'installation ${installation.id} supprimées`);
   }
 
   private async upsertOrganization(tx: Tx, payload: InstallationPayload): Promise<string> {

@@ -47,7 +47,8 @@ export class WebhookEventsProcessor extends WorkerHost {
       this.logger.log(`Événement ${event.eventType} ${event.id} ignoré pour l'instant`);
       return 'ignored';
     }
-    await this.prisma.client.webhookEvent.update({
+    // updateMany : une désinstallation supprime aussi l'événement lui-même (RGPD).
+    await this.prisma.client.webhookEvent.updateMany({
       where: { id: event.id },
       data: { processedAt: new Date() },
     });

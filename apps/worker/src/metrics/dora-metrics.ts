@@ -1,4 +1,4 @@
-import { METRIC_KEYS } from '@xcadence/shared';
+import { METRIC_KEYS, type MetricKey } from '@xcadence/shared';
 import { HOUR_MS, byWeek, groupByWeek, median, toValues, type MetricPoint } from './stats.js';
 
 export interface DoraDeployment {
@@ -72,70 +72,86 @@ function failures(changes: Change[]): { change: Change; restoredAt: Date | null 
   return result;
 }
 
-/** Fréquence de déploiement : déploiements réussis en production par semaine. */
-export function deploymentFrequency(deployments: DoraDeployment[]): MetricPoint[] {
-  const groups = groupByWeek(
-    productionChanges(deployments).filter((c) => c.succeeded),
-    (c) => c.at,
-  );
-  return byWeek(
-    toValues(groups, () => 1),
-    METRIC_KEYS.deploymentFrequency,
-    (v) => v.length,
-  );
+/** Une mesure datée, avant regroupement par semaine. */
+export interface Sample {
+  at: Date;
+  value: number;
 }
 
 /**
- * Délai de livraison (heures, médiane) : premier commit de la PR (ouverture à défaut) jusqu'au
- * premier déploiement réussi en production après sa fusion. Semaine du déploiement.
+ * Mesures DORA d'un seul dépôt : les déploiements ne doivent jamais être mélangés entre dépôts
+ * (association PR → déploiement, rollbacks, rétablissements). Pour une organisation, on réunit
+ * ensuite les mesures de chaque dépôt.
  */
-export function leadTime(prs: DoraPullRequest[], deployments: DoraDeployment[]): MetricPoint[] {
-  const shipped = productionChanges(deployments).filter((c) => c.succeeded);
-  const delivered = prs.flatMap((pr) => {
-    if (!pr.mergedAt) return [];
-    const merged = pr.mergedAt;
-    const deploy = shipped.find((c) => c.at >= merged);
-    if (!deploy) return [];
-    const start = pr.firstCommitAt ?? pr.createdAt;
-    return [{ at: deploy.at, hours: (deploy.at.getTime() - start.getTime()) / HOUR_MS }];
-  });
-  return byWeek(
-    toValues(
-      groupByWeek(delivered, (d) => d.at),
-      (d) => d.hours,
-    ),
-    METRIC_KEYS.leadTime,
-    median,
-  );
-}
-
-/** Taux d'échec des changements (%) : changements en échec / changements, par semaine. */
-export function changeFailureRate(deployments: DoraDeployment[]): MetricPoint[] {
+export function doraSamples(prs: DoraPullRequest[], deployments: DoraDeployment[]) {
   const changes = productionChanges(deployments);
-  const failed = new Set(failures(changes).map((f) => f.change));
-  return byWeek(
-    toValues(
-      groupByWeek(changes, (c) => c.at),
-      (c) => (failed.has(c) ? 1 : 0),
+  const shipped = changes.filter((c) => c.succeeded);
+  const failed = failures(changes);
+  const failedChanges = new Set(failed.map((f) => f.change));
+  return {
+    deployments: shipped.map((c) => ({ at: c.at, value: 1 })),
+    leadTimes: prs.flatMap((pr) => {
+      if (!pr.mergedAt) return [];
+      const merged = pr.mergedAt;
+      const deploy = shipped.find((c) => c.at >= merged);
+      if (!deploy) return [];
+      const start = pr.firstCommitAt ?? pr.createdAt;
+      return [{ at: deploy.at, value: (deploy.at.getTime() - start.getTime()) / HOUR_MS }];
+    }),
+    changes: changes.map((c) => ({ at: c.at, value: failedChanges.has(c) ? 1 : 0 })),
+    restores: failed.flatMap(({ change, restoredAt }) =>
+      restoredAt
+        ? [{ at: change.at, value: (restoredAt.getTime() - change.at.getTime()) / HOUR_MS }]
+        : [],
     ),
-    METRIC_KEYS.changeFailureRate,
-    (v) => (v.reduce((a, b) => a + b, 0) / v.length) * 100,
-  );
+  };
 }
 
-/** Temps de rétablissement (heures, médiane) : échec → déploiement réussi suivant. Semaine de l'échec. */
-export function timeToRestore(deployments: DoraDeployment[]): MetricPoint[] {
-  const restored = failures(productionChanges(deployments)).flatMap(({ change, restoredAt }) =>
-    restoredAt
-      ? [{ at: change.at, hours: (restoredAt.getTime() - change.at.getTime()) / HOUR_MS }]
-      : [],
-  );
-  return byWeek(
+export type DoraSamples = ReturnType<typeof doraSamples>;
+
+const weekly = (samples: Sample[], key: MetricKey, stat: (v: number[]) => number | null) =>
+  byWeek(
     toValues(
-      groupByWeek(restored, (r) => r.at),
-      (r) => r.hours,
+      groupByWeek(samples, (s) => s.at),
+      (s) => s.value,
     ),
-    METRIC_KEYS.timeToRestore,
-    median,
+    key,
+    stat,
   );
+
+/** Agrège des mesures DORA (d'un dépôt, ou réunies pour une organisation) par semaine. */
+export function doraMetrics(samples: DoraSamples): MetricPoint[] {
+  return [
+    // Fréquence : déploiements réussis en production.
+    ...weekly(samples.deployments, METRIC_KEYS.deploymentFrequency, (v) => v.length),
+    // Délai : premier commit (ouverture à défaut) → premier déploiement réussi après la fusion.
+    ...weekly(samples.leadTimes, METRIC_KEYS.leadTime, median),
+    // Taux d'échec (%) : changements en échec ou annulés, sur les changements de la semaine.
+    ...weekly(
+      samples.changes,
+      METRIC_KEYS.changeFailureRate,
+      (v) => (v.reduce((a, b) => a + b, 0) / v.length) * 100,
+    ),
+    // Rétablissement : échec → déploiement réussi suivant ; semaine de l'échec.
+    ...weekly(samples.restores, METRIC_KEYS.timeToRestore, median),
+  ];
 }
+
+const only = (key: MetricKey) => (points: MetricPoint[]) =>
+  points.filter((p) => p.metricKey === key);
+
+/** Fréquence de déploiement : déploiements réussis en production par semaine. */
+export const deploymentFrequency = (deployments: DoraDeployment[]) =>
+  only(METRIC_KEYS.deploymentFrequency)(doraMetrics(doraSamples([], deployments)));
+
+/** Délai de livraison (heures, médiane), semaine du déploiement. */
+export const leadTime = (prs: DoraPullRequest[], deployments: DoraDeployment[]) =>
+  only(METRIC_KEYS.leadTime)(doraMetrics(doraSamples(prs, deployments)));
+
+/** Taux d'échec des changements (%), par semaine. */
+export const changeFailureRate = (deployments: DoraDeployment[]) =>
+  only(METRIC_KEYS.changeFailureRate)(doraMetrics(doraSamples([], deployments)));
+
+/** Temps de rétablissement (heures, médiane), semaine de l'échec. */
+export const timeToRestore = (deployments: DoraDeployment[]) =>
+  only(METRIC_KEYS.timeToRestore)(doraMetrics(doraSamples([], deployments)));

@@ -6,6 +6,7 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { GithubModule } from './github/github.module.js';
 import { SyncModule } from './sync/sync.module.js';
+import { MetricsModule } from './metrics/metrics.module.js';
 
 // Les modules de jobs BullMQ (import, métriques, résumés, emails) arrivent ici : docs/03-BACKEND.md.
 @Module({
@@ -25,6 +26,7 @@ import { SyncModule } from './sync/sync.module.js';
     PrismaModule,
     GithubModule,
     SyncModule,
+    MetricsModule,
   ],
 })
 export class AppModule {}

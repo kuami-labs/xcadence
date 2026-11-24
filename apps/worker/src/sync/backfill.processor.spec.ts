@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JOBS } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { GithubService } from '../github/github.service.js';
+import { MetricsScheduler } from '../metrics/metrics.scheduler.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BackfillProcessor } from './backfill.processor.js';
 import { DeploymentsImporter } from './deployments.importer.js';
@@ -118,6 +119,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
   const base = Date.now() * 100;
   const octokit = fakeOctokit(base);
   const github = { forInstallation: vi.fn().mockResolvedValue(octokit) };
+  const scheduleFor = vi.fn();
   let repoId: string;
   let orgId: string;
 
@@ -133,6 +135,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
         DeploymentsImporter,
         PrismaService,
         { provide: GithubService, useValue: github },
+        { provide: MetricsScheduler, useValue: { scheduleFor } },
       ],
     }).compile();
     processor = module.get(BackfillProcessor);
@@ -201,6 +204,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
     expect(repo.defaultBranch).toBe('main');
     const syncJobs = await prisma.syncJob.findMany({ where: { organizationId: orgId } });
     expect(syncJobs.map((s) => [s.type, s.status])).toEqual([['backfill', 'succeeded']]);
+    expect(scheduleFor).toHaveBeenCalledWith(orgId);
   });
 
   it('un import rejoué ne crée aucun doublon', async () => {

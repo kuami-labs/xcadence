@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PullRequestsImporter } from '../sync/pull-requests.importer.js';
+import { trackedRepository } from './tracked-repository.js';
 import type { WebhookHandler } from './webhook-handler.js';
 
 /** Champs utilisés des événements `pull_request` et `pull_request_review`. */
@@ -32,11 +33,9 @@ export class PullRequestEventsHandler implements WebhookHandler {
       return false;
     }
     const event = payload as PullRequestEventPayload;
-    const repo = await this.prisma.client.repository.findUnique({
-      where: { githubRepoId: BigInt(event.repository.id) },
-    });
+    const repo = await trackedRepository(this.prisma, event.repository.id);
     // Dépôt inconnu ou non suivi : rien à enregistrer, l'événement est tout de même traité.
-    if (!repo?.isTracked || !event.installation) {
+    if (!repo || !event.installation) {
       return true;
     }
     const octokit = await this.github.forInstallation(event.installation.id);

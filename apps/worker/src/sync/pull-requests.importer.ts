@@ -33,14 +33,15 @@ export class PullRequestsImporter {
         if (new Date(summary.updated_at) < since) {
           return count;
         }
-        await this.importOne(octokit, repo, summary.number);
+        await this.importPullRequest(octokit, repo, summary.number);
         count += 1;
       }
     }
     return count;
   }
 
-  private async importOne(octokit: Octokit, repo: RepositoryTarget, number: number) {
+  /** Importe (ou réimporte) une PR, ses commits et ses revues ; utilisé aussi par les webhooks. */
+  async importPullRequest(octokit: Octokit, repo: RepositoryTarget, number: number) {
     const params = { owner: repo.owner, repo: repo.name, pull_number: number };
     const [{ data: pr }, commits, reviews] = await Promise.all([
       octokit.rest.pulls.get(params),

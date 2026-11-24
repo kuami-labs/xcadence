@@ -6,6 +6,7 @@ import { Redis } from 'ioredis';
 import { AppModule } from '../app.module.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import type { InstallationHandler } from './installation.handler.js';
+import type { PullRequestEventsHandler } from './pull-request-events.handler.js';
 import { WebhookEventsProcessor } from './webhook-events.processor.js';
 
 const jobFor = (webhookEventId: string) =>
@@ -15,12 +16,17 @@ describe('WebhookEventsProcessor', () => {
   const findUnique = vi.fn();
   const updateMany = vi.fn();
   const handle = vi.fn();
+  const prHandle = vi.fn().mockResolvedValue(false);
   const processor = new WebhookEventsProcessor(
     { client: { webhookEvent: { findUnique, updateMany } } } as unknown as PrismaService,
     { handle } as unknown as InstallationHandler,
+    { handle: prHandle } as unknown as PullRequestEventsHandler,
   );
 
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    prHandle.mockResolvedValue(false);
+  });
 
   it('refuse un job inconnu', async () => {
     await expect(processor.process({ name: 'autre', data: {} } as Job)).rejects.toThrow(
@@ -41,6 +47,19 @@ describe('WebhookEventsProcessor', () => {
       where: { id: 'e1' },
       data: { processedAt: expect.any(Date) },
     });
+  });
+
+  it('passe au gestionnaire suivant quand le premier ne gère pas', async () => {
+    findUnique.mockResolvedValue({
+      id: 'e1',
+      eventType: 'pull_request',
+      payload: {},
+      processedAt: null,
+    });
+    handle.mockResolvedValue(false);
+    prHandle.mockResolvedValue(true);
+    await expect(processor.process(jobFor('e1'))).resolves.toBe('processed');
+    expect(prHandle).toHaveBeenCalledWith('pull_request', {});
   });
 
   it('laisse non traité un événement pas encore géré', async () => {

@@ -1,13 +1,14 @@
-import { METRIC_KEYS, type MetricKey } from '@xcadence/shared';
-import { HOUR_MS, MINUTE_MS, groupByWeek, median, percentile } from './stats.js';
-
-/** Une valeur hebdomadaire, prête pour weekly_metrics. */
-export interface MetricPoint {
-  weekStart: Date;
-  metricKey: MetricKey;
-  value: number;
-  sampleSize: number;
-}
+import { METRIC_KEYS } from '@xcadence/shared';
+import {
+  HOUR_MS,
+  MINUTE_MS,
+  byWeek,
+  groupByWeek,
+  median,
+  percentile,
+  toValues,
+  type MetricPoint,
+} from './stats.js';
 
 export interface FlowPullRequest {
   isDraft: boolean;
@@ -21,23 +22,6 @@ export interface FlowWorkflowRun {
   startedAt: Date;
   completedAt: Date | null;
 }
-
-const byWeek = (
-  groups: Map<string, number[]>,
-  metricKey: MetricKey,
-  stat: (v: number[]) => number | null,
-) =>
-  [...groups.entries()]
-    .map(([week, values]) => ({
-      weekStart: new Date(week),
-      metricKey,
-      value: stat(values) as number,
-      sampleSize: values.length,
-    }))
-    .sort((a, b) => a.weekStart.getTime() - b.weekStart.getTime());
-
-const toValues = <T>(groups: Map<string, T[]>, value: (item: T) => number) =>
-  new Map([...groups].map(([week, items]) => [week, items.map(value)]));
 
 /**
  * Temps avant première revue (heures, médiane), par semaine d'ouverture de la PR.

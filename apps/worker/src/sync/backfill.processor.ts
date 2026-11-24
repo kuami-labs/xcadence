@@ -62,7 +62,7 @@ export class BackfillProcessor extends ReportedWorkerHost {
       const { data } = await octokit.rest.repos.get({ owner, repo: repo.name });
       await this.prisma.client.repository.update({
         where: { id: repo.id },
-        data: { defaultBranch: data.default_branch },
+        data: { defaultBranch: data.default_branch, isPrivate: data.private },
       });
 
       const since = new Date(Date.now() - BACKFILL_DAYS * 24 * 60 * 60 * 1000);

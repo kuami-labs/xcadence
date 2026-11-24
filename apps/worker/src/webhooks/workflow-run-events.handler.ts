@@ -6,7 +6,7 @@ import type { WebhookHandler } from './webhook-handler.js';
 
 /** Champs utilisés de l'événement `workflow_run`. */
 export interface WorkflowRunEventPayload {
-  repository: { id: number };
+  repository: { id: number; private?: boolean };
   workflow_run: GithubWorkflowRun;
 }
 
@@ -23,7 +23,7 @@ export class WorkflowRunEventsHandler implements WebhookHandler {
       return false;
     }
     const event = payload as WorkflowRunEventPayload;
-    const repo = await trackedRepository(this.prisma, event.repository.id);
+    const repo = await trackedRepository(this.prisma, event.repository);
     if (!repo) {
       return true;
     }

@@ -11,7 +11,8 @@ describe.skipIf(!process.env.DATABASE_URL)('InstallationHandler', () => {
   const base = randomInt(1_000_000, 900_000_000) * 1000;
   const account = { id: base, login: `org-${base}`, type: 'Organization' };
   const installation = { id: base, account };
-  const repo = (n: number) => ({ id: base + n, name: `depot-${n}` });
+  // Dépôt 2 public, les autres privés.
+  const repo = (n: number) => ({ id: base + n, name: `depot-${n}`, private: n !== 2 });
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
@@ -51,6 +52,7 @@ describe.skipIf(!process.env.DATABASE_URL)('InstallationHandler', () => {
     const list = await repos();
     expect(list.map((r) => r.name)).toEqual(['depot-1', 'depot-2']);
     expect(list.every((r) => !r.isTracked && r.defaultBranch === null)).toBe(true);
+    expect(list.map((r) => r.isPrivate)).toEqual([true, false]);
   });
 
   it('ajoute et retire des dépôts', async () => {

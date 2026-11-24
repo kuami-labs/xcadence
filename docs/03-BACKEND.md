@@ -68,6 +68,18 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 | `send-notifications`       | Après chaque résumé écrit          | Crée un `send-summary-email` par destinataire, une seule fois (`sent_at`)            |
 | `send-summary-email`       | `send-notifications`               | Envoie un email par SMTP (Mailpit en dev, Resend en production : ADR 0005), 3 essais |
 
+## Démo publique
+
+Une de nos organisations, où la GitHub App est installée, sert de démo en lecture seule (ADR 0006) :
+
+```bash
+pnpm --filter @xcadence/worker build
+pnpm --filter @xcadence/worker demo:enable kuami-labs
+pnpm --filter @xcadence/worker demo:disable
+```
+
+`demo:enable` relit la visibilité des dépôts de l'installation, puis fait de cette organisation la seule organisation de démo. Seuls ses dépôts suivis et publics seront montrés.
+
 ## Sécurité
 
 - GitHub App en lecture seule ; aucun accès en écriture au code.

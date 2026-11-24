@@ -75,7 +75,7 @@ function fakeOctokit(base: number) {
   const rest = {
     actions: { listWorkflowRunsForRepo: vi.fn() },
     repos: {
-      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main' } }),
+      get: vi.fn().mockResolvedValue({ data: { default_branch: 'main', private: false } }),
       listDeployments: vi.fn(),
       listDeploymentStatuses: vi.fn(async ({ deployment_id }: { deployment_id: number }) => ({
         data: statusesOf[deployment_id] ?? [],
@@ -203,6 +203,7 @@ describe.skipIf(!process.env.DATABASE_URL)('BackfillProcessor', () => {
 
     const repo = await prisma.repository.findUniqueOrThrow({ where: { id: repoId } });
     expect(repo.defaultBranch).toBe('main');
+    expect(repo.isPrivate).toBe(false);
     const syncJobs = await prisma.syncJob.findMany({ where: { organizationId: orgId } });
     expect(syncJobs.map((s) => [s.type, s.status])).toEqual([['backfill', 'succeeded']]);
     expect(scheduleFor).toHaveBeenCalledWith(orgId);

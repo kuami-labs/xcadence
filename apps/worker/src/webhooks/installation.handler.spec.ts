@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { InstallationHandler, type InstallationPayload } from './installation.handler.js';
@@ -7,7 +8,7 @@ describe.skipIf(!process.env.DATABASE_URL)('InstallationHandler', () => {
   let module: TestingModule;
   let handler: InstallationHandler;
   let prisma: PrismaService['client'];
-  const base = Date.now() * 100;
+  const base = randomInt(1_000_000, 900_000_000) * 1000;
   const account = { id: base, login: `org-${base}`, type: 'Organization' };
   const installation = { id: base, account };
   const repo = (n: number) => ({ id: base + n, name: `depot-${n}` });

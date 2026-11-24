@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DeploymentStatusEventsHandler } from './deployment-status-events.handler.js';
@@ -7,7 +8,7 @@ describe.skipIf(!process.env.DATABASE_URL)('DeploymentStatusEventsHandler', () =
   let module: TestingModule;
   let handler: DeploymentStatusEventsHandler;
   let prisma: PrismaService['client'];
-  const base = Date.now() * 100;
+  const base = randomInt(1_000_000, 900_000_000) * 1000;
   let orgId: string;
   let repoId: string;
 

@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { Controller, Get, INestApplication, Module, Param, UseGuards } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
@@ -35,7 +36,7 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
   () => {
     let app: INestApplication<App>;
     let prisma: PrismaService['client'];
-    const base = Date.now() * 10;
+    const base = randomInt(1_000_000, 900_000_000) * 1000;
     const ghUser = { id: base, login: `e2e-${base}`, email: null, avatar_url: null };
     const otherAccountId = base + 1;
     const github = {
@@ -88,12 +89,24 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
       return session as string;
     };
 
-    it('refuse un retour GitHub dont le state ne correspond pas', async () => {
+    it('renvoie vers /login un retour GitHub dont le state ne correspond pas', async () => {
       await request(app.getHttpServer())
         .get('/auth/github/callback?code=abc&state=pirate')
         .set('cookie', 'xc_oauth_state=attendu')
-        .expect(400);
+        .expect(302)
+        .expect('location', 'http://localhost:3000/login?erreur=connexion');
       expect(github.exchangeCode).not.toHaveBeenCalled();
+    });
+
+    it('renvoie vers /login si GitHub refuse le code', async () => {
+      const start = await request(app.getHttpServer()).get('/auth/github').expect(302);
+      const state = cookieValue(start, 'xc_oauth_state');
+      github.exchangeCode.mockRejectedValueOnce(new Error('refusé'));
+      await request(app.getHttpServer())
+        .get(`/auth/github/callback?code=mauvais&state=${state}`)
+        .set('cookie', `xc_oauth_state=${state}`)
+        .expect(302)
+        .expect('location', 'http://localhost:3000/login?erreur=connexion');
     });
 
     it('connecte, expose /auth/me puis déconnecte', async () => {

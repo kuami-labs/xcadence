@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { getQueueToken } from '@nestjs/bullmq';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -22,7 +23,7 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)(
     let otherOrgId: string;
     let repoId: string;
     let otherRepoId: string;
-    const base = BigInt(Date.now()) * 1000n;
+    const base = BigInt(randomInt(1_000_000, 900_000_000)) * 1000n;
 
     beforeAll(async () => {
       const moduleFixture: TestingModule = await Test.createTestingModule({

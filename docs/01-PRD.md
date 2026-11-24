@@ -75,7 +75,18 @@ Les calculs vivent dans `apps/worker/src/metrics`, couverts à 100 % par des tes
 - **Durée de vie des PR** : ouverture → fusion, par semaine de fusion.
 - **Durée de la CI** : runs terminés sur la branche principale, p50 et p90, par semaine de démarrage.
 
-Les niveaux Elite, High, Medium et Low suivent les seuils publiés par le programme DORA ; ils seront vérifiés sur la dernière édition du rapport avant l'implémentation.
+### Niveaux DORA (Elite à Low) : vérification de novembre 2026
+
+Le PRD prévoyait de vérifier les seuils sur la dernière édition du rapport avant l'implémentation (issue #44). Constat :
+
+- Le **rapport 2024** est la dernière édition à publier des groupes Elite, High, Medium et Low avec des seuils.
+- Le **rapport 2025** (_State of AI-assisted Software Development_) et la mise à jour du **Quick Check** d'avril 2026 n'en publient plus : un score de 0 à 10 et une comparaison à des repères issus de la recherche 2025, sans seuils fixes. Les profils d'équipes (7 archétypes) mêlent performance, stabilité et bien-être.
+- DORA suit désormais **cinq métriques** : délai de livraison (_change lead time_), fréquence de déploiement, temps de rétablissement après un déploiement en échec (_failed deployment recovery time_), taux d'échec des changements (_change fail rate_) et **taux de reprise des déploiements** (_deployment rework rate_, nouveau).
+- Le guide DORA met en garde contre le **classement** et la **comparaison** d'équipes, et contre le mélange des métriques de contextes différents.
+
+**Décision à prendre** : afficher un niveau (avec les seuils 2024, datés), ou le remplacer par la tendance par rapport à la période précédente.
+
+Sources : [guide des métriques DORA](https://dora.dev/guides/dora-metrics-four-keys/), [mise à jour du Quick Check](https://dora.dev/insights/quickcheck-updates/), [rapport 2024](https://dora.dev/research/2024/dora-report/), [rapport 2025](https://cloud.google.com/resources/content/2025-dora-ai-assisted-software-development-report).
 
 Les médianes sont préférées aux moyennes : une PR oubliée un mois ne doit pas fausser toute la semaine.
 

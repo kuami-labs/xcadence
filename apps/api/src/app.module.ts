@@ -14,6 +14,7 @@ import { RepositoriesModule } from './repositories/repositories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { ConfigController } from './config.controller.js';
 import { RecipientsModule } from './recipients/recipients.module.js';
+import { DemoModule } from './demo/demo.module.js';
 import { httpLoggerParams } from './logging.js';
 
 @Module({
@@ -22,7 +23,7 @@ import { httpLoggerParams } from './logging.js';
     LoggerModule.forRootAsync({ useFactory: () => httpLoggerParams() }),
     // Erreurs inattendues vers Sentry si SENTRY_DSN est défini (instrument.ts).
     SentryModule.forRoot(),
-    // Limitation de débit (docs/08-SECURITE.md), appliquée par ThrottlerGuard sur /auth et /webhooks.
+    // Limitation de débit (docs/08-SECURITE.md), appliquée par ThrottlerGuard sur /auth, /webhooks et /demo.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 30 }]),
     // Files BullMQ (packages/shared) : l'API publie, le worker traite.
     // Construit à l'initialisation (après le chargement du .env) ; client ioredis exigé par BullMQ en ESM.
@@ -41,6 +42,7 @@ import { httpLoggerParams } from './logging.js';
     RepositoriesModule,
     DashboardModule,
     RecipientsModule,
+    DemoModule,
   ],
   controllers: [HealthController, ConfigController],
   // Les erreurs HTTP attendues (4xx) ne partent pas vers Sentry, seulement les erreurs imprévues.

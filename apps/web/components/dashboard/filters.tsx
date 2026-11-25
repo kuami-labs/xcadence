@@ -1,6 +1,5 @@
 'use client';
 
-import type { RepositoryView } from '@xcadence/shared';
 import {
   Select,
   SelectContent,
@@ -16,15 +15,18 @@ const ALL = 'toute-l-organisation';
 export function DashboardFilters({
   weeks,
   repo,
-  repositories,
+  repositories: tracked,
+  allowOrganization = true,
   onChange,
 }: {
   weeks: number;
   repo: string | null;
-  repositories: RepositoryView[];
+  /** Dépôts suivis. */
+  repositories: { id: string; name: string }[];
+  /** Choix « Toute l'organisation » proposé (la démo le retire s'il inclut un dépôt privé). */
+  allowOrganization?: boolean;
   onChange: (next: { weeks?: number; repo?: string | null }) => void;
 }) {
-  const tracked = repositories.filter((r) => r.isTracked);
   return (
     <div className="flex flex-wrap gap-2">
       <Select value={String(weeks)} onValueChange={(value) => onChange({ weeks: Number(value) })}>
@@ -53,7 +55,7 @@ export function DashboardFilters({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Toute l&apos;organisation</SelectItem>
+          {allowOrganization && <SelectItem value={ALL}>Toute l&apos;organisation</SelectItem>}
           {tracked.map((r) => (
             <SelectItem key={r.id} value={r.id}>
               {r.name}

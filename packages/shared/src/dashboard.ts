@@ -79,3 +79,14 @@ export interface SummaryRecipientView {
   id: string;
   email: string;
 }
+
+/**
+ * GET /demo : démo publique en lecture seule (ADR 0006). Seuls les dépôts suivis et publics
+ * de l'organisation de démo sont exposés.
+ */
+export interface DemoResponse {
+  organization: { name: string };
+  repositories: { id: string; name: string }[];
+  /** Agrégat « toute l'organisation » disponible : aucun dépôt privé n'y entre. */
+  organizationMetrics: boolean;
+}

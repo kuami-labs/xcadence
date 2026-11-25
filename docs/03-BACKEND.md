@@ -39,23 +39,24 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Endpoints principaux
 
-| Méthode et route                                     | Rôle                                                                    |
-| ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `GET /auth/github`, `GET /auth/github/callback`      | Connexion                                                               |
-| `GET /auth/me`, `POST /auth/logout`                  | Utilisateur connecté et ses organisations ; déconnexion                 |
-| `POST /webhooks/github`                              | Réception des événements GitHub                                         |
-| `GET /orgs/:orgId/repositories`                      | Dépôts et statut de suivi                                               |
-| `PATCH /orgs/:orgId/repositories/:id`                | Suivre un dépôt ; environnements de production (`deployRule`, recalcul) |
-| `GET /orgs/:orgId/repositories/:id/environments`     | Environnements vus dans les déploiements, et ceux comptés en production |
-| `GET /orgs/:orgId/repositories/:id/pull-requests`    | PR récentes d'un dépôt (sans auteur)                                    |
-| `GET /orgs/:orgId/metrics?repo=&from=&to=`           | Métriques DORA et de flux par semaine                                   |
-| `GET /orgs/:orgId/bottlenecks`                       | PR bloquées, jobs de CI lents                                           |
-| `GET /orgs/:orgId/summaries/latest`                  | Dernier résumé                                                          |
-| `GET /orgs/:orgId/sync-status`                       | Avancement de l'import                                                  |
-| `GET`, `POST /orgs/:orgId/summary-recipients`        | Destinataires du résumé par email                                       |
-| `DELETE /orgs/:orgId/summary-recipients/:id`         | Retirer un destinataire                                                 |
-| `GET`, `POST /summary-recipients/unsubscribe?token=` | Désinscription publique en un clic (lien et RFC 8058, ADR 0005)         |
-| `GET /config`                                        | Réglages publics du front (adresse d'installation de la GitHub App)     |
+| Méthode et route                                          | Rôle                                                                    |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `GET /auth/github`, `GET /auth/github/callback`           | Connexion                                                               |
+| `GET /auth/me`, `POST /auth/logout`                       | Utilisateur connecté et ses organisations ; déconnexion                 |
+| `POST /webhooks/github`                                   | Réception des événements GitHub                                         |
+| `GET /orgs/:orgId/repositories`                           | Dépôts et statut de suivi                                               |
+| `PATCH /orgs/:orgId/repositories/:id`                     | Suivre un dépôt ; environnements de production (`deployRule`, recalcul) |
+| `GET /orgs/:orgId/repositories/:id/environments`          | Environnements vus dans les déploiements, et ceux comptés en production |
+| `GET /orgs/:orgId/repositories/:id/pull-requests`         | PR récentes d'un dépôt (sans auteur)                                    |
+| `GET /orgs/:orgId/metrics?repo=&from=&to=`                | Métriques DORA et de flux par semaine                                   |
+| `GET /orgs/:orgId/bottlenecks`                            | PR bloquées, jobs de CI lents                                           |
+| `GET /orgs/:orgId/summaries/latest`                       | Dernier résumé                                                          |
+| `GET /orgs/:orgId/sync-status`                            | Avancement de l'import                                                  |
+| `GET`, `POST /orgs/:orgId/summary-recipients`             | Destinataires du résumé par email                                       |
+| `DELETE /orgs/:orgId/summary-recipients/:id`              | Retirer un destinataire                                                 |
+| `GET`, `POST /summary-recipients/unsubscribe?token=`      | Désinscription publique en un clic (lien et RFC 8058, ADR 0005)         |
+| `GET /config`                                             | Réglages publics du front (adresse d'installation de la GitHub App)     |
+| `GET /demo`, `GET /demo/metrics`, `GET /demo/bottlenecks` | Démo publique, sans session et en lecture seule (ADR 0006)              |
 
 ## Jobs BullMQ
 
@@ -78,7 +79,14 @@ pnpm --filter @xcadence/worker demo:enable kuami-labs
 pnpm --filter @xcadence/worker demo:disable
 ```
 
-`demo:enable` relit la visibilité des dépôts de l'installation, puis fait de cette organisation la seule organisation de démo. Seuls ses dépôts suivis et publics seront montrés.
+`demo:enable` relit la visibilité des dépôts de l'installation, puis fait de cette organisation la seule organisation de démo. Seuls ses dépôts suivis et publics sont montrés.
+
+`GET /demo`, `/demo/metrics` et `/demo/bottlenecks` sont publics (aucune session, limitation de débit) et ne servent que l'organisation de démo :
+
+- `/demo` donne son nom et ses dépôts suivis et publics ;
+- `/demo/metrics?repo=` refuse (404) un dépôt privé, non suivi ou d'une autre organisation ; sans `repo`, l'agrégat de l'organisation n'est servi que si aucun dépôt privé suivi n'y entre ;
+- `/demo/bottlenecks` se limite aux dépôts publics ;
+- ni résumé IA, ni état des imports, ni écriture : 404 sans démo.
 
 ## Sécurité
 

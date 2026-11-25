@@ -8,6 +8,7 @@ import type {
   SyncStatusResponse,
   WeeklySummaryView,
 } from '@xcadence/shared';
+import { Prisma } from '@xcadence/db';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { MetricsQueryDto } from './metrics-query.dto.js';
 
@@ -48,10 +49,17 @@ export class DashboardService {
     };
   }
 
-  async bottlenecks(organizationId: string): Promise<BottlenecksResponse> {
+  /** `publicOnly` : seulement les dépôts publics (démo publique, ADR 0006). */
+  async bottlenecks(
+    organizationId: string,
+    { publicOnly = false }: { publicOnly?: boolean } = {},
+  ): Promise<BottlenecksResponse> {
     const now = Date.now();
     const open = await this.prisma.client.pullRequest.findMany({
-      where: { state: 'open', repository: { organizationId, isTracked: true } },
+      where: {
+        state: 'open',
+        repository: { organizationId, isTracked: true, ...(publicOnly && { isPrivate: false }) },
+      },
       select: {
         number: true,
         isDraft: true,
@@ -95,6 +103,7 @@ export class DashboardService {
       JOIN repositories r ON r.id = w.repository_id
       WHERE r.organization_id = ${organizationId}::uuid
         AND r.is_tracked
+        ${publicOnly ? Prisma.sql`AND NOT r.is_private` : Prisma.empty}
         AND w.branch = r.default_branch
         AND w.completed_at IS NOT NULL
         AND w.started_at >= now() - interval '28 days'

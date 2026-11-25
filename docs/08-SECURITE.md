@@ -112,7 +112,7 @@ Certains fichiers changent les règles du projet pour tout le monde : environnem
 | Session volée             | cookies `HttpOnly`, `Secure`, `SameSite=Lax` ; `SESSION_SECRET` long et aléatoire ; expiration       |
 | Requête forgée (CSRF)     | `SameSite` + vérification de l'origine sur les routes qui modifient                                  |
 | Entrées invalides         | validation de chaque DTO (`class-validator`), rejet des champs inconnus                              |
-| Abus                      | limitation de débit sur l'authentification et les webhooks                                           |
+| Abus                      | limitation de débit sur l'authentification, les webhooks et la démo publique                         |
 | Données personnelles      | uniquement les logins GitHub ; suppression complète à la désinstallation de l'App (RGPD)             |
 | Dépendance vulnérable     | Dependabot, `pnpm audit`                                                                             |
 

@@ -29,16 +29,35 @@ export class RecomputeProcessor extends ReportedWorkerHost {
       ? [job.data.organizationId]
       : (await this.prisma.client.organization.findMany({ select: { id: true } })).map((o) => o.id);
 
-    let rows = 0;
-    for (const organizationId of organizationIds) {
-      rows += await this.recompute(organizationId);
+    // Recalcul ciblé : une erreur fait échouer le job, que BullMQ réessaie.
+    if (job.data.organizationId) {
+      return { organizations: 1, rows: await this.recompute(job.data.organizationId) };
     }
-    if (!job.data.organizationId) {
-      const { count } = await this.prisma.client.session.deleteMany({
-        where: { expiresAt: { lt: new Date() } },
-      });
-      this.logger.log(
-        `Passage nocturne : ${organizationIds.length} organisations, ${count} sessions expirées purgées`,
+
+    // Passage nocturne : l'échec d'une organisation (interblocage avec une désinstallation en
+    // cours, par exemple) n'empêche ni les autres ni la purge des sessions ; le job est marqué en
+    // échec à la fin, et donc signalé, sans données ni identifiant de l'organisation.
+    let rows = 0;
+    let failures = 0;
+    for (const organizationId of organizationIds) {
+      try {
+        rows += await this.recompute(organizationId);
+      } catch (error) {
+        failures++;
+        this.logger.error(
+          `Passage nocturne : recalcul d'une organisation en échec : ${(error as Error).message}`,
+        );
+      }
+    }
+    const { count } = await this.prisma.client.session.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+    this.logger.log(
+      `Passage nocturne : ${organizationIds.length} organisations, ${count} sessions expirées purgées`,
+    );
+    if (failures > 0) {
+      throw new Error(
+        `Passage nocturne : ${failures} organisation(s) en échec sur ${organizationIds.length}`,
       );
     }
     return { organizations: organizationIds.length, rows };

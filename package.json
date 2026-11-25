@@ -11,8 +11,8 @@
     "format": "prettier --write . '!db/data'",
     "format:check": "prettier --check . '!db/data'",
     "db:migrate": "pnpm --filter @xcadence/db migrate",
-    "db:seed": "pnpm --filter @xcadence/db seed",
-    "db:reset": "pnpm --filter @xcadence/db reset"
+    "db:seed": "turbo run build --filter=@xcadence/worker && pnpm --filter @xcadence/worker seed",
+    "db:reset": "pnpm --filter @xcadence/db reset && pnpm db:seed"
   },
   "lint-staged": {
     "*.{ts,tsx,js,mjs}": [

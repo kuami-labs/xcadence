@@ -1,11 +1,14 @@
 import { randomInt } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { GLOBAL_TEST_LOCK, holdTestLock } from '@xcadence/db';
 import request from 'supertest';
 import { App } from 'supertest/types.js';
 import { AppModule } from './../src/app.module.js';
 import { configureApp } from './../src/configure-app.js';
 import { PrismaService } from './../src/prisma/prisma.service.js';
+
+const LOCK_TIMEOUT_MS = 120_000;
 
 const DAY = 24 * 60 * 60 * 1000;
 const ago = (days: number) => new Date(Date.now() - days * DAY);
@@ -20,6 +23,7 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)('GET /demo 
   let privateRepo: string;
   // Une seule démo à la fois : celles déjà en base (développement local) sont mises de côté.
   let previousDemos: string[] = [];
+  let releaseLock: (() => Promise<void>) | undefined;
   const base = BigInt(randomInt(1_000_000, 900_000_000)) * 1000n;
 
   const get = (path: string) => request(app.getHttpServer()).get(path);
@@ -32,6 +36,8 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)('GET /demo 
     configureApp(app);
     await app.init();
     prisma = app.get(PrismaService).client;
+    // Démo globale (une seule) : sérialisé avec les tests du worker qui la modifient.
+    releaseLock = await holdTestLock(prisma, GLOBAL_TEST_LOCK);
 
     previousDemos = (
       await prisma.organization.findMany({ where: { isDemo: true }, select: { id: true } })
@@ -104,7 +110,8 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)('GET /demo 
         },
       });
     }
-  });
+    // Attente possible du verrou, tenu par un autre fichier de test.
+  }, LOCK_TIMEOUT_MS);
 
   afterAll(async () => {
     await prisma.organization.deleteMany({ where: { id: { in: [demoId, otherId] } } });
@@ -112,6 +119,7 @@ describe.skipIf(!process.env.DATABASE_URL || !process.env.REDIS_URL)('GET /demo 
       where: { id: { in: previousDemos } },
       data: { isDemo: true },
     });
+    await releaseLock?.();
     await app.close();
   });
 

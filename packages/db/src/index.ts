@@ -10,3 +10,4 @@ export function createPrismaClient(connectionString = process.env.DATABASE_URL):
   }
   return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 }
+export { holdTestLock, GLOBAL_TEST_LOCK } from './test-lock.js';

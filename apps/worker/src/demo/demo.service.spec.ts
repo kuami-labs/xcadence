@@ -1,8 +1,11 @@
 import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
+import { GLOBAL_TEST_LOCK, holdTestLock } from '@xcadence/db';
 import { GithubService } from '../github/github.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DemoService } from './demo.service.js';
+
+const LOCK_TIMEOUT_MS = 120_000;
 
 // Intégration sur PostgreSQL (DATABASE_URL), comme dans la CI ; GitHub simulé.
 describe.skipIf(!process.env.DATABASE_URL)('DemoService', () => {
@@ -19,6 +22,9 @@ describe.skipIf(!process.env.DATABASE_URL)('DemoService', () => {
   };
   const github = { forInstallation: vi.fn().mockResolvedValue(octokit) };
   const orgIds: string[] = [];
+  // Démo globale (une seule) : tests sérialisés, démo existante remise en place après.
+  let releaseLock: (() => Promise<void>) | undefined;
+  let previousDemos: string[] = [];
 
   const createOrg = async (n: number, installed: boolean) => {
     const org = await prisma.organization.create({
@@ -38,10 +44,21 @@ describe.skipIf(!process.env.DATABASE_URL)('DemoService', () => {
     }).compile();
     demo = module.get(DemoService);
     prisma = module.get(PrismaService).client;
-  });
+    releaseLock = await holdTestLock(prisma, GLOBAL_TEST_LOCK);
+    previousDemos = (
+      await prisma.organization.findMany({ where: { isDemo: true }, select: { id: true } })
+    ).map((o) => o.id);
+    // Attente possible du verrou, tenu par un autre fichier de test.
+  }, LOCK_TIMEOUT_MS);
 
   afterAll(async () => {
     await prisma.organization.deleteMany({ where: { id: { in: orgIds } } });
+    await prisma.organization.updateMany({ where: { isDemo: true }, data: { isDemo: false } });
+    await prisma.organization.updateMany({
+      where: { id: { in: previousDemos } },
+      data: { isDemo: true },
+    });
+    await releaseLock?.();
     await module.close();
   });
 

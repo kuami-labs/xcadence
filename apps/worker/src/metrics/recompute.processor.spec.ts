@@ -1,5 +1,6 @@
 import { randomInt } from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
+import { GLOBAL_TEST_LOCK, holdTestLock } from '@xcadence/db';
 import { JOBS, METRIC_KEYS } from '@xcadence/shared';
 import type { Job } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -101,11 +102,19 @@ describe.skipIf(!process.env.DATABASE_URL)('RecomputeProcessor', () => {
     const valid = await prisma.session.create({
       data: { tokenHash: `valide-${base}`, userId, expiresAt: new Date(Date.now() + 60_000) },
     });
-    const result = await processor.process(job({}));
+    // Parcourt toutes les organisations : sérialisé avec les tests qui en créent ou en suppriment
+    // massivement (jeu de test), sinon interblocage avec leur suppression en cascade.
+    const release = await holdTestLock(prisma, GLOBAL_TEST_LOCK);
+    let result: Awaited<ReturnType<RecomputeProcessor['process']>>;
+    try {
+      result = await processor.process(job({}));
+    } finally {
+      await release();
+    }
     expect(result.organizations).toBeGreaterThanOrEqual(1);
     expect(await prisma.session.count({ where: { id: expired.id } })).toBe(0);
     expect(await prisma.session.count({ where: { id: valid.id } })).toBe(1);
-  });
+  }, 120_000);
 
   it('refuse un job inconnu', async () => {
     await expect(processor.process(job({}, 'autre'))).rejects.toThrow('Job inconnu');

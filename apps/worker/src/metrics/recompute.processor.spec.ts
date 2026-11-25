@@ -116,6 +116,36 @@ describe.skipIf(!process.env.DATABASE_URL)('RecomputeProcessor', () => {
     expect(await prisma.session.count({ where: { id: valid.id } })).toBe(1);
   }, 120_000);
 
+  it("passage nocturne : l'échec d'une organisation n'arrête ni les autres ni la purge", async () => {
+    const expired = await prisma.session.create({
+      data: { tokenHash: `expiree-2-${base}`, userId, expiresAt: new Date(Date.now() - 1000) },
+    });
+    // Au moins une autre organisation, même sur une base vierge (CI).
+    const other = await prisma.organization.create({
+      data: { githubOrgId: BigInt(base + 2), name: 'autre' },
+    });
+    const release = await holdTestLock(prisma, GLOBAL_TEST_LOCK);
+    const real = processor.recompute.bind(processor);
+    const recompute = vi
+      .spyOn(processor, 'recompute')
+      .mockImplementation((id) =>
+        id === orgId ? Promise.reject(new Error('interblocage')) : real(id),
+      );
+    try {
+      await expect(processor.process(job({}))).rejects.toThrow(/1 organisation\(s\) en échec/);
+      expect(recompute).toHaveBeenCalledWith(other.id);
+      expect(await prisma.session.count({ where: { id: expired.id } })).toBe(0);
+      // Un recalcul ciblé, lui, échoue pour que BullMQ le réessaie.
+      await expect(processor.process(job({ organizationId: orgId }))).rejects.toThrow(
+        'interblocage',
+      );
+    } finally {
+      recompute.mockRestore();
+      await release();
+      await prisma.organization.delete({ where: { id: other.id } });
+    }
+  }, 120_000);
+
   it('refuse un job inconnu', async () => {
     await expect(processor.process(job({}, 'autre'))).rejects.toThrow('Job inconnu');
   });

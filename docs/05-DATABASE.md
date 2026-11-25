@@ -25,7 +25,7 @@ JSON `{ "productionEnvironments": ["Production – ui"] }` : les environnements 
 
 ## Démo publique (`organizations.is_demo`, `repositories.is_private`)
 
-Une seule organisation a `is_demo = true` : une des nôtres, où la GitHub App est installée (ADR 0006). La démo n'en montre que les dépôts suivis et publics. `is_private` vaut `true` tant que la visibilité n'est pas connue ; elle est relevée à l'installation, à chaque import, à chaque événement et par `demo:enable`.
+Une seule organisation a `is_demo = true` : une des nôtres, où la GitHub App est installée (ADR 0006), ou, en développement, l'organisation fictive du jeu de test (`pnpm db:seed`, `github_org_id = -1`). La démo n'en montre que les dépôts suivis et publics. `is_private` vaut `true` tant que la visibilité n'est pas connue ; elle est relevée à l'installation, à chaque import, à chaque événement et par `demo:enable`.
 
 ## Relations
 

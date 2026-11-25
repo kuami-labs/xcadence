@@ -20,6 +20,7 @@ Nous choisissons l'option 2 : XCadence ne lit que des dépôts dont nous sommes 
 
 - `organizations.is_demo` marque l'organisation montrée, une seule à la fois (`demo:enable <organisation>`, `demo:disable`).
 - `repositories.is_private` vaut `true` tant que la visibilité n'est pas connue ; elle est relevée à l'installation, à chaque import, à chaque événement et par `demo:enable`. La démo n'affiche que les dépôts publics et suivis.
+- Amendement (#86) : en développement, le jeu de test (`pnpm db:seed`) crée une organisation **fictive**, sans installation ni dépôt réel, qui devient la démo s'il n'y en a pas déjà une. Elle permet de voir l'application sans GitHub App ; elle ne contient aucune donnée d'une équipe réelle, ce qui respecte le motif de cette décision. En production, la démo reste une de nos organisations où l'App est installée (`demo:enable`).
 
 ## Conséquences
 

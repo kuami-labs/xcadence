@@ -45,7 +45,7 @@ export class DemoService {
 
   private async demo() {
     const org = await this.prisma.client.organization.findFirst({
-      where: { isDemo: true, installationId: { not: null } },
+      where: { isDemo: true },
       include: {
         repositories: {
           where: { isTracked: true },

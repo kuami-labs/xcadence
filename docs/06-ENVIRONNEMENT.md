@@ -24,7 +24,7 @@ L'environnement est **du code**, versionné avec le projet. Un contributeur n'in
 | Redis                | 7                               | 7                                   |
 | Configuration        | fichier `.env` local            | variables d'environnement (Coolify) |
 | GitHub App           | une App de dev par contributeur | l'App officielle                    |
-| Données              | jeu de test (`db/seed`)         | réelles                             |
+| Données              | jeu de test (`pnpm db:seed`)    | réelles                             |
 | Résumé IA            | Ollama, ou fournisseur factice  | fournisseur choisi par l'instance   |
 | Emails               | Mailpit (rien ne part)          | Resend ou SMTP                      |
 | Rechargement à chaud | oui                             | non                                 |
@@ -50,14 +50,16 @@ Sur votre machine, et rien d'autre :
    git clone git@github.com:VOTRE-COMPTE/xcadence.git
    ```
 2. Ouvrez le dossier dans VS Code, puis **F1** → **Dev Containers: Reopen in Container**. Le premier build prend quelques minutes.
-3. À la création, le conteneur installe les dépendances et copie `.env.example` en `.env`. Renseignez les variables de votre GitHub App de dev dans `.env` ([voir plus bas](#la-github-app-de-développement)).
+3. À la création, le conteneur installe les dépendances et copie `.env.example` en `.env`. Pour voir l'application avec le jeu de test, rien d'autre à renseigner ; pour vos propres dépôts, ajoutez les variables de votre GitHub App de dev ([voir plus bas](#la-github-app-de-développement)).
 4. Dans le terminal de VS Code :
    ```bash
    pnpm db:migrate      # crée les tables
-   pnpm db:seed         # charge le jeu de test
+   pnpm db:seed         # charge le jeu de test (organisation fictive, 90 jours)
    pnpm dev             # lance api, worker et web
    ```
-5. Ouvrez http://localhost:3000 (web). L'API répond sur http://localhost:4000/health.
+5. Ouvrez http://localhost:3000/demo : le tableau de bord et les goulots du jeu de test, sans connexion. L'API répond sur http://localhost:4000/health.
+
+Le jeu de test est une organisation fictive, `acme (jeu de test)` : 2 dépôts publics et 90 jours de PR, revues, runs de CI et déploiements de production, générés sans GitHub (identifiants GitHub négatifs, aucune collision possible). Ses métriques sont calculées par le code du worker. Elle devient la démo publique s'il n'y en a pas déjà une. Relancer `pnpm db:seed` la remplace sans toucher aux autres données.
 
 ## Les fichiers
 
@@ -371,16 +373,16 @@ Ainsi, le Node, pnpm et `psql` utilisés sont toujours ceux du conteneur.
 
 ## Commandes utiles
 
-| Commande                    | Effet                                              |
-| --------------------------- | -------------------------------------------------- |
-| `pnpm dev`                  | lance api, worker et web avec rechargement à chaud |
-| `pnpm build`                | compile tout, comme la CI                          |
-| `pnpm test`                 | tests unitaires et d'intégration                   |
-| `pnpm lint` / `pnpm format` | ESLint / Prettier                                  |
-| `pnpm db:migrate`           | applique les migrations Prisma                     |
-| `pnpm db:seed`              | charge le jeu de test                              |
-| `pnpm db:reset`             | vide la base, rejoue migrations et seed            |
-| `pnpm db:studio`            | interface Prisma Studio                            |
+| Commande                                        | Effet                                              |
+| ----------------------------------------------- | -------------------------------------------------- |
+| `pnpm dev`                                      | lance api, worker et web avec rechargement à chaud |
+| `pnpm build`                                    | compile tout, comme la CI                          |
+| `pnpm test`                                     | tests unitaires et d'intégration                   |
+| `pnpm lint` / `pnpm format`                     | ESLint / Prettier                                  |
+| `pnpm db:migrate`                               | applique les migrations Prisma                     |
+| `pnpm db:seed`                                  | charge (ou remplace) le jeu de test                |
+| `pnpm db:reset`                                 | vide la base, rejoue migrations et seed            |
+| `pnpm --filter @xcadence/db exec prisma studio` | interface Prisma Studio                            |
 
 ## Vérifier l'environnement
 

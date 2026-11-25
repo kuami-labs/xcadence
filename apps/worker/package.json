@@ -16,7 +16,8 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "dev": "nest start --watch",
     "demo:enable": "node dist/demo/cli.js enable",
-    "demo:disable": "node dist/demo/cli.js disable"
+    "demo:disable": "node dist/demo/cli.js disable",
+    "seed": "node dist/seed/cli.js"
   },
   "dependencies": {
     "@nestjs/bullmq": "^12.0.2",

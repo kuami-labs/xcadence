@@ -44,35 +44,57 @@ export class RecomputeProcessor extends ReportedWorkerHost {
     return { organizations: organizationIds.length, rows };
   }
 
-  async recompute(organizationId: string): Promise<number> {
-    const repos = await this.prisma.client.repository.findMany({
-      where: { organizationId, isTracked: true },
-      select: {
-        id: true,
-        defaultBranch: true,
-        deployRule: true,
-        pullRequests: {
-          select: {
-            isDraft: true,
-            createdAt: true,
-            firstCommitAt: true,
-            firstReviewAt: true,
-            mergedAt: true,
-          },
-        },
-        workflowRuns: { select: { branch: true, startedAt: true, completedAt: true } },
-        deployments: {
-          select: { sha: true, environment: true, status: true, createdAt: true, finishedAt: true },
+  recompute(organizationId: string): Promise<number> {
+    return recomputeOrganization(this.prisma, organizationId);
+  }
+}
+
+/**
+ * Remplace les métriques hebdomadaires d'une organisation par celles recalculées depuis ses
+ * données brutes (dépôts suivis). Partagé par le job et le jeu de test (pnpm db:seed).
+ */
+export async function recomputeOrganization(
+  prisma: PrismaService,
+  organizationId: string,
+): Promise<number> {
+  const repos = await prisma.client.repository.findMany({
+    where: { organizationId, isTracked: true },
+    select: {
+      id: true,
+      defaultBranch: true,
+      deployRule: true,
+      pullRequests: {
+        select: {
+          isDraft: true,
+          createdAt: true,
+          firstCommitAt: true,
+          firstReviewAt: true,
+          mergedAt: true,
         },
       },
-    });
-    const metrics = organizationMetrics(repos);
-    await this.prisma.client.$transaction([
-      this.prisma.client.weeklyMetric.deleteMany({ where: { organizationId } }),
-      this.prisma.client.weeklyMetric.createMany({
+      workflowRuns: { select: { branch: true, startedAt: true, completedAt: true } },
+      deployments: {
+        select: { sha: true, environment: true, status: true, createdAt: true, finishedAt: true },
+      },
+    },
+  });
+  const metrics = organizationMetrics(repos);
+  try {
+    await prisma.client.$transaction([
+      // Un recalcul à la fois par organisation (passage nocturne et recalcul ciblé simultanés).
+      prisma.client
+        .$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`recompute:${organizationId}`}))`,
+      prisma.client.weeklyMetric.deleteMany({ where: { organizationId } }),
+      prisma.client.weeklyMetric.createMany({
         data: metrics.map((m) => ({ organizationId, ...m })),
       }),
     ]);
-    return metrics.length;
+  } catch (error) {
+    // Organisation supprimée entre la lecture et l'écriture (désinstallation) : rien à recalculer,
+    // et le passage nocturne continue avec les autres.
+    // Code de l'erreur plutôt qu'instanceof : la classe peut venir d'une autre copie du client.
+    if ((error as { code?: unknown } | null)?.code === 'P2003') return 0;
+    throw error;
   }
+  return metrics.length;
 }

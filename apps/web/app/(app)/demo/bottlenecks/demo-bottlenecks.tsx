@@ -2,6 +2,7 @@
 
 import { BottlenecksView } from '@/components/bottlenecks/bottlenecks-view';
 import { DemoBanner } from '@/components/demo-banner';
+import { PageBody, PageState } from '@/components/page-header';
 import { useDemo, useDemoBottlenecks } from '@/hooks/use-demo';
 import { NoDemo } from '../demo-dashboard';
 
@@ -10,12 +11,19 @@ export function DemoBottlenecks() {
   const demo = useDemo();
   const bottlenecks = useDemoBottlenecks();
 
-  if (demo.isPending) return <p className="p-8 text-muted-foreground">Chargement…</p>;
-  if (demo.isError || bottlenecks.isError) return <NoDemo />;
+  if (demo.isPending)
+    return (
+      <PageBody>
+        <PageState>Chargement…</PageState>
+      </PageBody>
+    );
+  if (demo.isError) return <NoDemo />;
   return (
-    <>
-      <DemoBanner organization={demo.data.organization.name} />
-      <BottlenecksView subtitle={demo.data.organization.name} data={bottlenecks.data} />
-    </>
+    <BottlenecksView
+      subtitle={`${demo.data.organization.name} · démo publique`}
+      notice={<DemoBanner organization={demo.data.organization.name} />}
+      data={bottlenecks.data}
+      error={bottlenecks.isError}
+    />
   );
 }

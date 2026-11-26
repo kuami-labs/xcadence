@@ -127,6 +127,41 @@ function MetricTab({
   selected: boolean;
   onSelect: () => void;
 }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={selected}
+      onClick={onSelect}
+      className="flex flex-col items-start gap-1.5 bg-muted px-4 py-4 text-left outline-none hover:bg-card focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-selected:bg-card aria-selected:shadow-[inset_0_2px_0_var(--primary)] sm:px-6 sm:py-5"
+    >
+      <MetricFigure
+        metric={metric}
+        values={values}
+        current={current}
+        previous={previous}
+        weeks={weeks}
+      />
+    </button>
+  );
+}
+
+/** Une métrique : libellé, valeur sur la période et tendance par rapport à la précédente. */
+export function MetricFigure({
+  metric,
+  values,
+  current,
+  previous,
+  weeks,
+  size = 'lg',
+}: {
+  metric: MetricDefinition;
+  values: MetricValue[];
+  current: Period;
+  previous: Period;
+  weeks: number;
+  size?: 'md' | 'lg';
+}) {
   const now = summarize(values, metric, current, weeks);
   const before = summarize(values, metric, previous, weeks);
   const change = trend(now.value, before.value, metric.better);
@@ -137,16 +172,15 @@ function MetricTab({
         ? ArrowUpRightIcon
         : ArrowDownRightIcon;
   return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={selected}
-      onClick={onSelect}
-      className="flex flex-col items-start gap-1.5 bg-muted px-4 py-4 text-left outline-none hover:bg-card focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-selected:bg-card aria-selected:shadow-[inset_0_2px_0_var(--primary)] sm:px-6 sm:py-5"
-    >
+    <>
       <span className="text-sm font-medium text-muted-foreground">{metric.label}</span>
       <span className="flex items-baseline gap-1.5">
-        <span className="text-[28px] leading-tight font-semibold tracking-tight tabular-nums">
+        <span
+          className={cn(
+            'leading-tight font-semibold tracking-tight tabular-nums',
+            size === 'lg' ? 'text-[28px]' : 'text-2xl',
+          )}
+        >
           {formatValue(now.value)}
         </span>
         {now.value !== null ? (
@@ -184,20 +218,23 @@ function MetricTab({
           </>
         )}
       </span>
-    </button>
+    </>
   );
 }
 
-function WeeklyBars({
+/** La métrique semaine par semaine : la période affichée en bleu, les précédentes en clair. */
+export function WeeklyBars({
   metric,
   values,
   period,
   firstCurrent,
+  className,
 }: {
   metric: MetricDefinition;
   values: MetricValue[];
   period: Period;
   firstCurrent: string;
+  className?: string;
 }) {
   const data = weeklySeries(values, metric, period).map((w) => ({
     week: weekLabel(w.weekStart),
@@ -215,7 +252,7 @@ function WeeklyBars({
     value: { label: metric.label, color: 'var(--bar-current)' },
   } satisfies ChartConfig;
   return (
-    <ChartContainer config={config} className="aspect-auto h-56 w-full sm:h-64">
+    <ChartContainer config={config} className={cn('aspect-auto h-56 w-full sm:h-64', className)}>
       <BarChart data={data} margin={{ left: 0, right: 0, top: 8 }} barCategoryGap="22%">
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis
@@ -227,7 +264,13 @@ function WeeklyBars({
           minTickGap={12}
           className="font-mono"
         />
-        <YAxis width={36} tickLine={false} axisLine={false} className="font-mono" />
+        <YAxis
+          width={44}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(v: number) => formatValue(v)}
+          className="font-mono"
+        />
         <ChartTooltip
           cursor={{ fill: 'var(--muted)' }}
           content={

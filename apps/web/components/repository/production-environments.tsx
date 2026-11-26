@@ -64,10 +64,10 @@ export function ProductionEnvironments({
           : 'Règle par défaut : les environnements nommés « production » ou « prod ».'}{' '}
         Les métriques DORA ne comptent que les déploiements vers les environnements cochés.
       </p>
-      <ul className="space-y-2">
+      <ul className="divide-y overflow-hidden rounded-lg border">
         {environments.data.map((environment) => (
           <li key={environment.name}>
-            <label className="flex items-center gap-3 text-sm">
+            <label className="flex cursor-pointer items-center gap-3 px-3.5 py-2.5 text-sm hover:bg-muted/60">
               <Checkbox
                 checked={selected.has(environment.name)}
                 onCheckedChange={(checked) => toggle(environment.name, checked)}
@@ -76,8 +76,8 @@ export function ProductionEnvironments({
                   (!selected.has(environment.name) && selected.size >= MAX_PRODUCTION_ENVIRONMENTS)
                 }
               />
-              <span className="flex-1 truncate">{environment.name}</span>
-              <span className="text-muted-foreground tabular-nums">
+              <span className="flex-1 truncate font-mono text-[13px]">{environment.name}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {environment.deployments} déploiement{environment.deployments > 1 ? 's' : ''}
               </span>
             </label>
@@ -97,7 +97,7 @@ export function ProductionEnvironments({
           Enregistrer
         </Button>
         {rule && (
-          <Button variant="outline" disabled={update.isPending} onClick={() => save(null)}>
+          <Button variant="ghost" disabled={update.isPending} onClick={() => save(null)}>
             Revenir à la règle par défaut
           </Button>
         )}

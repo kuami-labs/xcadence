@@ -1,6 +1,7 @@
 'use client';
 
 import { BottlenecksView } from '@/components/bottlenecks/bottlenecks-view';
+import { PageBody, PageHeader, PageState } from '@/components/page-header';
 import { useBottlenecks } from '@/hooks/use-dashboard';
 import { useOrganization } from '@/hooks/use-organization';
 
@@ -10,18 +11,26 @@ export function Bottlenecks() {
   const bottlenecks = useBottlenecks(orgId);
 
   if (me.isPending || me.data === null)
-    return <p className="p-8 text-muted-foreground">Chargement…</p>;
-  if (me.isError || bottlenecks.isError) {
     return (
-      <p role="alert" className="p-8 text-destructive">
-        Impossible de joindre l&apos;API. Réessayez dans un instant.
-      </p>
+      <PageBody>
+        <PageState>Chargement…</PageState>
+      </PageBody>
     );
-  }
-  if (!orgId)
+  if (!orgId && !me.isError)
     return (
-      <p className="p-8 text-muted-foreground">Aucune organisation : installez la GitHub App.</p>
+      <main className="flex flex-1 flex-col">
+        <PageHeader title="Goulots" />
+        <PageBody>
+          <PageState>Aucune organisation : installez la GitHub App.</PageState>
+        </PageBody>
+      </main>
     );
 
-  return <BottlenecksView subtitle={organization?.name} data={bottlenecks.data} />;
+  return (
+    <BottlenecksView
+      subtitle={`${organization?.name ?? ''} · sans classement des personnes`}
+      data={bottlenecks.data}
+      error={me.isError || bottlenecks.isError}
+    />
+  );
 }

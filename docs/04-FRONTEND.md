@@ -5,10 +5,10 @@ L'application Next.js compte 6 pages ; elle lit uniquement l'API NestJS et ne pa
 | Route                        | Page              | Contenu principal                                                                                                                    |
 | ---------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `/login`                     | Connexion         | Bouton « Se connecter avec GitHub »                                                                                                  |
-| `/onboarding`                | Installation      | Installer la GitHub App, choisir les dépôts, suivre l'import                                                                         |
+| `/onboarding`                | Installation      | Trois étapes suivies : installer la GitHub App, choisir les dépôts, suivre l'import                                                  |
 | `/dashboard`                 | Vue d'ensemble    | 4 métriques DORA en onglets (valeur, tendance), la métrique choisie en barres sur 12 semaines, résumé de la semaine, goulots en bref |
-| `/repositories/[id]`         | Détail d'un dépôt | Métriques du dépôt, durée de la CI, environnements de production, PR récentes                                                        |
-| `/bottlenecks`               | Goulots           | PR en attente de revue, PR anciennes, jobs de CI lents ou instables                                                                  |
+| `/repositories/[id]`         | Détail d'un dépôt | 8 métriques (DORA et flux) avec tendance, durée de la CI en barres, environnements de production, PR récentes                        |
+| `/bottlenecks`               | Goulots           | Trois chiffres clés, puis en onglets : PR en attente de revue, PR anciennes, CI lente ou instable                                    |
 | `/settings`                  | Paramètres        | Dépôts suivis, détection des déploiements, destinataires du résumé, seuils d'alerte                                                  |
 | `/demo`, `/demo/bottlenecks` | Démo publique     | Vue d'ensemble et goulots de l'organisation de démo, sans connexion (ADR 0006)                                                       |
 

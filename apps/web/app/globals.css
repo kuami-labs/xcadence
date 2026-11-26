@@ -25,6 +25,10 @@
   --color-chart-1: var(--chart-1);
   --color-bar-current: var(--bar-current);
   --color-bar-past: var(--bar-past);
+  --color-logo-1: var(--logo-1);
+  --color-logo-2: var(--logo-2);
+  --color-logo-3: var(--logo-3);
+  --color-logo-4: var(--logo-4);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -88,6 +92,12 @@
   /* Barres des graphiques : période affichée, puis semaines précédentes. */
   --bar-current: #3280ff;
   --bar-past: #dff2ff;
+  /* Logo (docs/brand) : facettes haut, droite (C), bas, gauche ; nom. */
+  --logo-1: #5ba4ff;
+  --logo-2: #115cff;
+  --logo-3: #0830a0;
+  --logo-4: #3280ff;
+  --logo-word: #0b1220;
 }
 
 .dark {
@@ -125,6 +135,11 @@
   --sidebar-ring: #3280ff;
   --bar-current: #5ba4ff;
   --bar-past: #333a47;
+  --logo-1: #bedbff;
+  --logo-2: #3280ff;
+  --logo-3: #115cff;
+  --logo-4: #5ba4ff;
+  --logo-word: #ffffff;
 }
 
 @layer base {

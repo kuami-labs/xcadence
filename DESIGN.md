@@ -64,7 +64,7 @@ Grille de 4 px (échelle Tailwind). Repères : 16 px de marge latérale sur mobi
 
 ### Logo
 
-Quatre facettes (les 4 métriques DORA) éclairées du haut ; le creux dessine le X, la facette de droite le C. Fichiers, construction, couleurs et règles d'usage : [docs/brand/](docs/brand/README.md). Dans l'interface, toujours le composant `Logo` / `LogoSymbol` (version petite taille, couleurs `--logo-1` à `--logo-4` et `--logo-word`, clair et sombre) ; jamais une image recolorée.
+Le X de XCadence, fait de deux chevrons de code qui se font face (`><`). Fichiers, construction, couleurs et règles d'usage : [docs/brand/](docs/brand/README.md). Dans l'interface, toujours le composant `Logo` / `LogoSymbol` (version petite taille, couleurs `--logo-1`, `--logo-2` et `--logo-word`, clair et sombre) ; jamais une image recolorée. Favicon : la tuile bleue.
 
 ### Icônes
 
@@ -90,7 +90,7 @@ Composants shadcn/ui (sur Base UI) dans `components/ui/`, habillés par les jeto
 | `WeeklyBars`                          | idem                                           | Une métrique semaine par semaine (recharts), période en `--bar-current` |
 | `BottlenecksSummary`                  | `components/dashboard/bottlenecks-summary.tsx` | Goulots en bref                                                         |
 | `SettingsSection`                     | `components/settings/settings-section.tsx`     | Réglage : explication à gauche, carte à droite                          |
-| `Logo`, `LogoSymbol`                  | `components/logo.tsx`                          | Logo XC (docs/brand) : symbole seul ou avec le nom                      |
+| `Logo`, `LogoSymbol`                  | `components/logo.tsx`                          | Logo à chevrons (docs/brand) : symbole seul ou avec le nom              |
 | `ThemeButton`, `ThemeSwitch`          | `components/theme-toggle.tsx`                  | Bascule de thème (en-têtes simples, barre latérale)                     |
 | `DemoBanner`                          | `components/demo-banner.tsx`                   | Rappel de la démo publique en lecture seule                             |
 

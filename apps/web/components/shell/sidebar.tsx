@@ -13,6 +13,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { AfterHydration } from '@/components/after-hydration';
 import { Logo } from '@/components/logo';
 import { ThemeSwitch } from '@/components/theme-toggle';
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -73,7 +74,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Logo />
       </Link>
 
-      {demo ? <DemoBlock /> : <OrganizationSwitcher />}
+      <AfterHydration>{demo ? <DemoBlock /> : <OrganizationSwitcher />}</AfterHydration>
 
       <ul className="flex flex-col gap-0.5">
         {links.map((link) => (
@@ -101,7 +102,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             Se connecter avec GitHub
           </a>
         ) : (
-          <Account />
+          <AfterHydration>
+            <Account />
+          </AfterHydration>
         )}
       </div>
     </nav>

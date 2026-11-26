@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
+import { ClientPage } from '@/components/client-page';
 import { DemoDashboard } from './demo-dashboard';
 
 export default function DemoPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-muted-foreground">Chargement…</p>}>
+    <ClientPage>
       <DemoDashboard />
-    </Suspense>
+    </ClientPage>
   );
 }

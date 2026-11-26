@@ -1,13 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { BottlenecksSummary } from '@/components/dashboard/bottlenecks-summary';
 import {
   DashboardView,
   ErrorMessage,
   useDashboardFilters,
 } from '@/components/dashboard/dashboard-view';
 import { WeeklySummary } from '@/components/dashboard/weekly-summary';
-import { useMetrics, useRepositories } from '@/hooks/use-dashboard';
+import { PageBody, PageHeader, PageState } from '@/components/page-header';
+import { useBottlenecks, useMetrics, useRepositories } from '@/hooks/use-dashboard';
 import { useOrganization } from '@/hooks/use-organization';
 
 /** Tableau de bord de l'organisation choisie (session requise). */
@@ -16,40 +18,61 @@ export function Dashboard() {
   const filters = useDashboardFilters();
   const metrics = useMetrics(orgId, filters.repo, filters.from, filters.to);
   const repositories = useRepositories(orgId);
+  const bottlenecks = useBottlenecks(orgId);
 
   if (me.isPending || me.data === null)
-    return <p className="p-8 text-muted-foreground">Chargement…</p>;
-  if (me.isError) return <ErrorMessage />;
+    return (
+      <PageBody>
+        <PageState>Chargement…</PageState>
+      </PageBody>
+    );
+  if (me.isError)
+    return (
+      <PageBody>
+        <ErrorMessage />
+      </PageBody>
+    );
   if (!orgId) {
     return (
-      <main className="mx-auto w-full max-w-5xl p-8">
-        <h1 className="text-2xl font-semibold">Tableau de bord</h1>
-        <p className="mt-2 text-muted-foreground">
-          Aucune organisation pour l&apos;instant.{' '}
-          <Link className="underline" href="/onboarding">
-            Installer la GitHub App
-          </Link>
-        </p>
+      <main className="flex flex-1 flex-col">
+        <PageHeader title="Vue d'ensemble" />
+        <PageBody>
+          <PageState>
+            Aucune organisation pour l&apos;instant.{' '}
+            <Link className="font-medium text-primary hover:underline" href="/onboarding">
+              Installer la GitHub App
+            </Link>
+          </PageState>
+        </PageBody>
       </main>
     );
   }
 
+  const tracked = (repositories.data ?? []).filter((r) => r.isTracked);
   return (
     <DashboardView
-      subtitle={`${organization?.name} · connecté en tant que ${me.data.user.login}`}
+      subtitle={`${organization?.name} · ${tracked.length} dépôt${tracked.length > 1 ? 's' : ''} suivi${tracked.length > 1 ? 's' : ''}`}
       filters={filters}
       metrics={metrics}
-      repositories={(repositories.data ?? []).filter((r) => r.isTracked)}
+      repositories={tracked}
       empty={
         <>
           Aucune donnée pour l&apos;instant.{' '}
-          <Link className="underline" href={`/settings?org=${orgId}`}>
+          <Link
+            className="font-medium text-primary hover:underline"
+            href={`/settings?org=${orgId}`}
+          >
             Suivez un dépôt
           </Link>{' '}
           : l&apos;import des 90 derniers jours démarre aussitôt.
         </>
       }
       summary={<WeeklySummary orgId={orgId} />}
+      bottlenecks={
+        bottlenecks.isError ? null : (
+          <BottlenecksSummary data={bottlenecks.data} href={`/bottlenecks?org=${orgId}`} />
+        )
+      }
     />
   );
 }

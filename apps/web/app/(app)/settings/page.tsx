@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
+import { ClientPage } from '@/components/client-page';
 import { Settings } from './settings';
 
 export default function SettingsPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-muted-foreground">Chargement…</p>}>
+    <ClientPage>
       <Settings />
-    </Suspense>
+    </ClientPage>
   );
 }

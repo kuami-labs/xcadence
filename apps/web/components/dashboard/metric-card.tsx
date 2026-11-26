@@ -9,8 +9,8 @@ import {
 } from '@/lib/metrics/summary';
 
 const DIRECTION_STYLE = {
-  better: 'text-emerald-700 dark:text-emerald-400',
-  worse: 'text-red-700 dark:text-red-400',
+  better: 'text-chart-3',
+  worse: 'text-destructive',
   stable: 'text-muted-foreground',
 } as const;
 

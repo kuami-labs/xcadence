@@ -1,5 +1,6 @@
 'use client';
 
+import { XIcon } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +33,46 @@ export function SummaryRecipients({ orgId }: { orgId: string }) {
           : null;
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={submit} className="flex gap-2">
+    <div>
+      {recipients.isError ? (
+        <p role="alert" className="px-5 py-4 text-sm text-destructive">
+          Impossible de charger les destinataires.
+        </p>
+      ) : recipients.isPending ? (
+        <p className="px-5 py-4 text-sm text-muted-foreground">Chargement…</p>
+      ) : recipients.data.length === 0 ? (
+        <p className="px-5 py-4 text-sm text-muted-foreground">
+          Aucun destinataire : le résumé reste visible sur le tableau de bord.
+        </p>
+      ) : (
+        <ul className="divide-y">
+          {recipients.data.map((recipient) => (
+            <li
+              key={recipient.id}
+              className="flex items-center gap-3 px-5 py-2.5 hover:bg-muted/60"
+            >
+              <span
+                aria-hidden
+                className="grid size-7 shrink-0 place-items-center rounded-full bg-accent text-xs font-semibold text-accent-foreground uppercase"
+              >
+                {recipient.email.slice(0, 1)}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm">{recipient.email}</span>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                disabled={remove.isPending}
+                onClick={() => remove.mutate(recipient.id)}
+                aria-label={`Retirer ${recipient.email}`}
+                title="Retirer"
+              >
+                <XIcon />
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <form onSubmit={submit} className="flex flex-wrap gap-2 border-t bg-muted px-5 py-4">
         <label htmlFor="recipient-email" className="sr-only">
           Adresse email
         </label>
@@ -47,42 +86,17 @@ export function SummaryRecipients({ orgId }: { orgId: string }) {
           onChange={(event) => setEmail(event.target.value)}
           aria-invalid={addError ? true : undefined}
           aria-describedby={addError ? 'recipient-error' : undefined}
+          className="min-w-48 flex-1 bg-card"
         />
         <Button type="submit" disabled={add.isPending}>
           Ajouter
         </Button>
+        {addError && (
+          <p id="recipient-error" role="alert" className="w-full text-sm text-destructive">
+            {addError}
+          </p>
+        )}
       </form>
-      {addError && (
-        <p id="recipient-error" role="alert" className="text-sm text-destructive">
-          {addError}
-        </p>
-      )}
-      {recipients.isError ? (
-        <p role="alert" className="text-sm text-destructive">
-          Impossible de charger les destinataires.
-        </p>
-      ) : recipients.isPending ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
-      ) : recipients.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucun destinataire pour l&apos;instant.</p>
-      ) : (
-        <ul className="divide-y rounded-lg border">
-          {recipients.data.map((recipient) => (
-            <li key={recipient.id} className="flex items-center justify-between gap-4 px-3 py-2">
-              <span className="truncate text-sm">{recipient.email}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={remove.isPending}
-                onClick={() => remove.mutate(recipient.id)}
-                aria-label={`Retirer ${recipient.email}`}
-              >
-                Retirer
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

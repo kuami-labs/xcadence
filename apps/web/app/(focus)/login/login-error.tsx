@@ -13,7 +13,7 @@ export function LoginError() {
   return (
     <p
       role="alert"
-      className="rounded-md border border-destructive/40 p-3 text-sm text-destructive"
+      className="rounded-lg border border-destructive/50 px-3.5 py-3 text-sm text-destructive"
     >
       {MESSAGES[erreur] ?? MESSAGES.connexion}
     </p>

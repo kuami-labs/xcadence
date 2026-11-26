@@ -10,40 +10,56 @@ export function RepositoryList({ orgId }: { orgId: string }) {
   const track = useTrackRepository(orgId);
 
   if (repositories.isPending)
-    return <p className="text-sm text-muted-foreground">Chargement des dépôts…</p>;
+    return <p className="px-5 py-4 text-sm text-muted-foreground">Chargement des dépôts…</p>;
   if (repositories.isError) {
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="px-5 py-4 text-sm text-destructive">
         Impossible de charger les dépôts.
       </p>
     );
   }
   if (repositories.data.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="px-5 py-4 text-sm text-muted-foreground">
         Aucun dépôt : l&apos;installation de la GitHub App n&apos;en donne accès à aucun.
       </p>
     );
   }
   return (
-    <ul className="divide-y rounded-lg border">
+    <ul className="divide-y">
       {repositories.data.map((repo) => (
-        <li key={repo.id} className="flex items-center justify-between gap-4 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <label htmlFor={`suivi-${repo.id}`} className="font-medium">
+        <li
+          key={repo.id}
+          className="flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-muted/60"
+        >
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <label htmlFor={`suivi-${repo.id}`} className="truncate text-sm font-medium">
               {repo.name}
             </label>
-            {repo.isTracked ? (
-              <Link
-                className="text-sm text-muted-foreground underline"
-                href={`/repositories/${repo.id}?org=${orgId}`}
-              >
-                Voir les métriques
-              </Link>
-            ) : null}
+            <span className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+              {repo.defaultBranch ? (
+                <span>
+                  branche <span className="font-mono">{repo.defaultBranch}</span>
+                </span>
+              ) : (
+                <span>pas encore importé</span>
+              )}
+              {repo.isTracked ? (
+                <>
+                  <span aria-hidden>·</span>
+                  <Link
+                    className="font-medium text-primary hover:underline"
+                    href={`/repositories/${repo.id}?org=${orgId}`}
+                  >
+                    Voir les métriques
+                  </Link>
+                </>
+              ) : null}
+            </span>
           </div>
           <Switch
             id={`suivi-${repo.id}`}
+            aria-label={`Suivre ${repo.name}`}
             checked={repo.isTracked}
             disabled={track.isPending}
             onCheckedChange={(checked) => track.mutate({ id: repo.id, isTracked: checked })}
@@ -51,7 +67,7 @@ export function RepositoryList({ orgId }: { orgId: string }) {
         </li>
       ))}
       {track.isError ? (
-        <li role="alert" className="px-4 py-3 text-sm text-destructive">
+        <li role="alert" className="px-5 py-3 text-sm text-destructive">
           La modification n&apos;a pas été enregistrée. Réessayez.
         </li>
       ) : null}

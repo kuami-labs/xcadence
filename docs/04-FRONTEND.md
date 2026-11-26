@@ -29,6 +29,8 @@ L'application Next.js compte 7 pages ; elle lit uniquement l'API NestJS et ne pa
 
 ## Thème et mise en page
 
+Le système de design complet (jetons, typographie, composants, motifs, règles) est dans [DESIGN.md](../DESIGN.md) ; ce qui suit en résume les choix techniques.
+
 - Composants shadcn/ui, habillés avec le thème « Azure Flow » de 21st.dev (serafimcloud), repris tel quel dans `app/globals.css`. Polices Inter et JetBrains Mono (`next/font`).
 - Rayons : cartes `--radius` (18 px), boutons et champs 12 px. Cartes : bordure fine et ombre légère.
 - Couleurs de tendance : `--chart-3` (bleu) pour une amélioration, `--destructive` pour une dégradation, toujours avec le texte ou une flèche, jamais la couleur seule.

@@ -7,9 +7,14 @@
 
 **Radar de santé d'équipe tech.** XCadence calcule les métriques DORA et les goulots d'une équipe directement depuis GitHub, et les résume chaque semaine pour le CTO, en 5 minutes de lecture.
 
-![Tableau de bord de XCadence sur le jeu de test : fréquence de déploiement, délai de livraison, taux d'échec des changements, temps de rétablissement](docs/images/tableau-de-bord.jpg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/tableau-de-bord-sombre.jpg">
+  <img src="docs/images/tableau-de-bord.jpg" alt="Tableau de bord de XCadence sur le jeu de test : fréquence de déploiement, délai de livraison, taux d'échec des changements, temps de rétablissement, en onglets, et la métrique choisie semaine par semaine">
+</picture>
 
-_Capture sur le jeu de test (`pnpm db:seed`) : organisation et données fictives._
+_Capture sur le jeu de test (`pnpm db:seed`) : organisation et données fictives. Version claire ou sombre selon votre thème GitHub._
+
+> **Version 0.1.0, bêta.** Les fonctionnalités ci-dessous sont en place et testées ; la version hébergée n'est pas encore en ligne : pour l'essayer, lancez-la en local (démarrage rapide) ou hébergez-la vous-même.
 
 ## Ce que fait XCadence
 
@@ -17,6 +22,8 @@ _Capture sur le jeu de test (`pnpm db:seed`) : organisation et données fictives
 - **Les 4 métriques DORA**, par dépôt et par semaine, avec leur tendance : fréquence de déploiement, délai de livraison, taux d'échec des changements, temps de rétablissement.
 - **Les goulots** : PR qui attendent une revue, PR anciennes, CI lente ou instable.
 - **Un résumé hebdomadaire** de 5 lignes, écrit par une IA et vérifié chiffre par chiffre, envoyé par email chaque lundi.
+- **Une démo publique** en lecture seule, sur des dépôts publics, sans compte ni installation.
+- **Une interface claire ou sombre**, responsive du téléphone au grand écran.
 
 **Ce que XCadence ne fait pas :** classer ou noter des développeurs. L'outil mesure l'équipe et le processus, jamais la performance individuelle. Il ne stocke aucun code source, seulement des métadonnées (dates, tailles, statuts).
 
@@ -35,7 +42,7 @@ Vous n'installez que **Docker** et **VS Code** avec l'extension **Dev Containers
    pnpm db:seed      # charge le jeu de test : une organisation fictive, 90 jours d'activité
    pnpm dev          # lance l'API (4000), le worker et le web (3000)
    ```
-4. Ouvrez **http://localhost:3000/demo** : le tableau de bord et les goulots du jeu de test, sans compte ni GitHub App.
+4. Ouvrez **http://localhost:3000** : la page d'accueil ; puis **/demo** pour le tableau de bord et les goulots du jeu de test, sans compte ni GitHub App.
 
 Pour suivre vos propres dépôts, créez votre GitHub App de développement et renseignez ses variables dans `.env` : voir [docs/06-ENVIRONNEMENT.md](docs/06-ENVIRONNEMENT.md#la-github-app-de-développement).
 

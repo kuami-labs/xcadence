@@ -1,0 +1,19 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Dépendances autorisées à lancer leurs scripts d'installation
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+  # accélérateur natif optionnel de msgpackr (BullMQ) : inutile, msgpackr a un repli en JavaScript
+  msgpackr-extract: false
+
+# Correctifs de sécurité de dépendances transitives (alertes Dependabot).
+# À retirer quand l'amont aura suivi (prisma > 7.10.1, shadcn sur ts-morph >= 28).
+overrides:
+  # GHSA-7589-6fvf-x4pw : @prisma/config@7.10.1 fige effect@3.20.0
+  '@prisma/config>effect': ^3.22.1
+  # GHSA-g3hv-75wg-m249 : @ts-morph/common@0.27.0 (shadcn > ts-morph@26) demande minimatch ^10
+  '@ts-morph/common>minimatch': ^11.0.1

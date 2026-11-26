@@ -1,0 +1,50 @@
+{
+  "name": "@xcadence/worker",
+  "version": "0.0.1",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "build": "nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism",
+    "dev": "nest start --watch",
+    "demo:enable": "node dist/demo/cli.js enable",
+    "demo:disable": "node dist/demo/cli.js disable",
+    "seed": "node dist/seed/cli.js"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^12.0.2",
+    "@nestjs/common": "^12.0.1",
+    "@nestjs/core": "^12.0.1",
+    "@sentry/nestjs": "11.16.0",
+    "@xcadence/db": "workspace:*",
+    "@xcadence/shared": "workspace:*",
+    "bullmq": "^6.7.8",
+    "ioredis": "^6.0.0",
+    "nestjs-pino": "5.3.2",
+    "nodemailer": "^10.6.1",
+    "octokit": "^5.0.5",
+    "pino": "10.4.0",
+    "pino-http": "11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^12.0.0",
+    "@nestjs/schematics": "^12.0.0",
+    "@nestjs/testing": "^12.0.1",
+    "@types/nodemailer": "^8.0.2",
+    "@vitest/coverage-v8": "^5.1.1",
+    "pino-pretty": "13.2.0",
+    "source-map-support": "^0.5.21",
+    "vite": "^8.0.0",
+    "vitest": "^5.1.1"
+  }
+}

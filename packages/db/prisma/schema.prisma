@@ -1,0 +1,285 @@
+// Schéma XCadence : voir docs/05-DATABASE.md.
+// Métadonnées GitHub uniquement : aucune donnée de code source n'est stockée.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Comptes ----------
+
+enum MembershipRole {
+  owner
+  member
+}
+
+model User {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  githubId    BigInt       @unique @map("github_id")
+  login       String
+  email       String?
+  avatarUrl   String?      @map("avatar_url")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  memberships Membership[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Organization {
+  id             String             @id @default(uuid(7)) @db.Uuid
+  githubOrgId    BigInt             @unique @map("github_org_id")
+  name           String
+  installationId BigInt?            @unique @map("installation_id")
+  /// Démo publique en lecture seule : une de nos organisations où l'App est installée (CLI demo:enable).
+  isDemo         Boolean            @default(false) @map("is_demo")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+  memberships    Membership[]
+  repositories   Repository[]
+  weeklyMetrics  WeeklyMetric[]
+  summaries      WeeklySummary[]
+  recipients     SummaryRecipient[]
+  syncJobs       SyncJob[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  userId         String         @map("user_id") @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  role           MembershipRole @default(member)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, organizationId])
+  @@index([organizationId])
+  @@map("memberships")
+}
+
+/// Session de connexion : le cookie porte un jeton aléatoire, la base n'en garde que l'empreinte SHA-256.
+model Session {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ---------- Données brutes copiées de GitHub ----------
+
+enum PullRequestState {
+  open
+  closed
+  merged
+}
+
+enum ReviewState {
+  approved
+  changes_requested
+  commented
+  dismissed
+  pending
+}
+
+enum DeploymentStatus {
+  pending
+  queued
+  in_progress
+  success
+  failure
+  error
+  inactive
+}
+
+model Repository {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  organizationId String         @map("organization_id") @db.Uuid
+  githubRepoId   BigInt         @unique @map("github_repo_id")
+  name           String
+  /// Visibilité GitHub ; privé tant qu'elle n'est pas connue : la démo n'affiche que les dépôts publics.
+  isPrivate      Boolean        @default(true) @map("is_private")
+  /// Inconnue tant que le dépôt n'a pas été importé : les webhooks d'installation ne la donnent pas.
+  defaultBranch  String?        @map("default_branch")
+  isTracked      Boolean        @default(false) @map("is_tracked")
+  /// Règle de détection des déploiements (question ouverte du PRD) : forme libre pour l'instant.
+  deployRule     Json?          @map("deploy_rule")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pullRequests   PullRequest[]
+  deployments    Deployment[]
+  workflowRuns   WorkflowRun[]
+  weeklyMetrics  WeeklyMetric[]
+
+  @@index([organizationId])
+  @@map("repositories")
+}
+
+model PullRequest {
+  id            String           @id @default(uuid(7)) @db.Uuid
+  repositoryId  String           @map("repository_id") @db.Uuid
+  githubPrId    BigInt           @unique @map("github_pr_id")
+  number        Int
+  authorLogin   String           @map("author_login")
+  state         PullRequestState
+  isDraft       Boolean          @default(false) @map("is_draft")
+  createdAt     DateTime         @map("created_at")
+  firstCommitAt DateTime?        @map("first_commit_at")
+  firstReviewAt DateTime?        @map("first_review_at")
+  mergedAt      DateTime?        @map("merged_at")
+  closedAt      DateTime?        @map("closed_at")
+  additions     Int              @default(0)
+  deletions     Int              @default(0)
+  repository    Repository       @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  reviews       Review[]
+
+  @@unique([repositoryId, number])
+  @@index([repositoryId, mergedAt])
+  @@index([repositoryId, createdAt])
+  @@map("pull_requests")
+}
+
+model Review {
+  id             String      @id @default(uuid(7)) @db.Uuid
+  pullRequestId  String      @map("pull_request_id") @db.Uuid
+  githubReviewId BigInt      @unique @map("github_review_id")
+  reviewerLogin  String      @map("reviewer_login")
+  state          ReviewState
+  submittedAt    DateTime?   @map("submitted_at")
+  pullRequest    PullRequest @relation(fields: [pullRequestId], references: [id], onDelete: Cascade)
+
+  @@index([pullRequestId])
+  @@map("reviews")
+}
+
+model Deployment {
+  id                 String           @id @default(uuid(7)) @db.Uuid
+  repositoryId       String           @map("repository_id") @db.Uuid
+  githubDeploymentId BigInt           @unique @map("github_deployment_id")
+  sha                String
+  environment        String
+  status             DeploymentStatus
+  createdAt          DateTime         @map("created_at")
+  finishedAt         DateTime?        @map("finished_at")
+  repository         Repository       @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId, createdAt])
+  @@map("deployments")
+}
+
+model WorkflowRun {
+  id           String     @id @default(uuid(7)) @db.Uuid
+  repositoryId String     @map("repository_id") @db.Uuid
+  githubRunId  BigInt     @unique @map("github_run_id")
+  workflowName String     @map("workflow_name")
+  branch       String
+  /// Conclusion GitHub (success, failure, cancelled…) ; null tant que le run tourne.
+  conclusion   String?
+  startedAt    DateTime   @map("started_at")
+  completedAt  DateTime?  @map("completed_at")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId, startedAt])
+  @@map("workflow_runs")
+}
+
+// ---------- Métriques calculées ----------
+
+model WeeklyMetric {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  /// null = toute l'organisation
+  repositoryId   String?      @map("repository_id") @db.Uuid
+  weekStart      DateTime     @map("week_start") @db.Date
+  metricKey      String       @map("metric_key")
+  value          Float
+  sampleSize     Int          @map("sample_size")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  repository     Repository?  @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  // NULLS NOT DISTINCT : une seule ligne « toute l'organisation » par semaine et métrique.
+  @@unique([organizationId, repositoryId, weekStart, metricKey], map: "weekly_metrics_scope_key")
+  @@index([repositoryId, weekStart, metricKey])
+  @@map("weekly_metrics")
+}
+
+model WeeklySummary {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  weekStart      DateTime     @map("week_start") @db.Date
+  content        String
+  model          String
+  sentAt         DateTime?    @map("sent_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, weekStart])
+  @@map("weekly_summaries")
+}
+
+/// Destinataire du résumé hebdomadaire (donnée personnelle : supprimée avec l'organisation).
+model SummaryRecipient {
+  id               String       @id @default(uuid(7)) @db.Uuid
+  organizationId   String       @map("organization_id") @db.Uuid
+  email            String
+  /// Jeton aléatoire du lien de désinscription en un clic.
+  unsubscribeToken String       @unique @map("unsubscribe_token")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, email])
+  @@map("summary_recipients")
+}
+
+// ---------- Technique ----------
+
+enum SyncJobType {
+  backfill
+  webhook
+  recompute
+}
+
+enum SyncJobStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+model SyncJob {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  type           SyncJobType
+  status         SyncJobStatus @default(queued)
+  startedAt      DateTime?     @map("started_at")
+  finishedAt     DateTime?     @map("finished_at")
+  error          String?
+  createdAt      DateTime      @default(now()) @map("created_at")
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("sync_jobs")
+}
+
+model WebhookEvent {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  deliveryId  String    @unique @map("delivery_id")
+  eventType   String    @map("event_type")
+  payload     Json
+  receivedAt  DateTime  @default(now()) @map("received_at")
+  processedAt DateTime? @map("processed_at")
+
+  @@map("webhook_events")
+}

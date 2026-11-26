@@ -21,45 +21,45 @@ Avant **toute** installation, création, configuration ou modification, vérifie
 
 Tout doit être **rejouable** : relancer une étape ne doit rien casser ni dupliquer.
 
-| Élément | Vérification |
-| --- | --- |
-| Outil installé | `command -v <outil>` puis `<outil> --version` |
-| Docker utilisable | `docker info` (le moteur répond) |
-| Fichier du projet | `test -f <chemin>` puis le lire et le comparer à la doc |
-| Dépôt git local | `git rev-parse --is-inside-work-tree`, `git remote -v`, `git branch -a` |
-| Authentification GitHub | `gh auth status` (scopes compris) |
-| Organisation | `gh api orgs/<org>` |
-| Dépôt distant | `gh repo view <org>/<repo>` |
-| Réglages du dépôt | `gh api repos/<org>/<repo>` |
-| Équipes | `gh api orgs/<org>/teams` |
-| Ruleset | `gh api repos/<org>/<repo>/rulesets` |
-| Labels | `gh label list -R <org>/<repo>` |
-| Service compose | `docker compose ps` |
-| Dépendance npm | présence dans `package.json` et `pnpm-lock.yaml` |
-| Migration | `pnpm prisma migrate status` |
+| Élément                 | Vérification                                                            |
+| ----------------------- | ----------------------------------------------------------------------- |
+| Outil installé          | `command -v <outil>` puis `<outil> --version`                           |
+| Docker utilisable       | `docker info` (le moteur répond)                                        |
+| Fichier du projet       | `test -f <chemin>` puis le lire et le comparer à la doc                 |
+| Dépôt git local         | `git rev-parse --is-inside-work-tree`, `git remote -v`, `git branch -a` |
+| Authentification GitHub | `gh auth status` (scopes compris)                                       |
+| Organisation            | `gh api orgs/<org>`                                                     |
+| Dépôt distant           | `gh repo view <org>/<repo>`                                             |
+| Réglages du dépôt       | `gh api repos/<org>/<repo>`                                             |
+| Équipes                 | `gh api orgs/<org>/teams`                                               |
+| Ruleset                 | `gh api repos/<org>/<repo>/rulesets`                                    |
+| Labels                  | `gh label list -R <org>/<repo>`                                         |
+| Service compose         | `docker compose ps`                                                     |
+| Dépendance npm          | présence dans `package.json` et `pnpm-lock.yaml`                        |
+| Migration               | `pnpm prisma migrate status`                                            |
 
 Les commandes `sudo` et toute saisie de mot de passe, code 2FA ou jeton : propose-les, ne les exécute jamais toi-même.
 
 ## Documents de référence (à lire selon la tâche)
 
-| Sujet | Fichier |
-| --- | --- |
-| Produit, fonctionnalités, métriques, plan | `docs/01-PRD.md` |
-| Stack et structure du monorepo | `docs/02-STACK.md` |
-| Backend : modules NestJS, endpoints, jobs | `docs/03-BACKEND.md` |
-| Frontend : pages, composants | `docs/04-FRONTEND.md` |
-| Base de données : tables, index | `docs/05-DATABASE.md` |
-| Dev container, compose, .env | `docs/06-ENVIRONNEMENT.md` |
-| Branches, qualité, CI, revue | `docs/07-COLLABORATION.md` |
-| Sécurité, injection de prompts | `docs/08-SECURITE.md` |
-| Décisions d'architecture | `docs/adr/` |
+| Sujet                                     | Fichier                    |
+| ----------------------------------------- | -------------------------- |
+| Produit, fonctionnalités, métriques, plan | `docs/01-PRD.md`           |
+| Stack et structure du monorepo            | `docs/02-STACK.md`         |
+| Backend : modules NestJS, endpoints, jobs | `docs/03-BACKEND.md`       |
+| Frontend : pages, composants              | `docs/04-FRONTEND.md`      |
+| Système de design (jetons, composants)    | `DESIGN.md`                |
+| Base de données : tables, index           | `docs/05-DATABASE.md`      |
+| Dev container, compose, .env              | `docs/06-ENVIRONNEMENT.md` |
+| Branches, qualité, CI, revue              | `docs/07-COLLABORATION.md` |
+| Sécurité, injection de prompts            | `docs/08-SECURITE.md`      |
+| Décisions d'architecture                  | `docs/adr/`                |
 
 Ces documents font foi. En cas de contradiction entre eux ou avec une demande, **demande avant d'agir**.
 
 ## Commandes
 
 **pnpm uniquement** (jamais npm, npx ni yarn) : `pnpm add`, `pnpm --filter <app> add`, `pnpm dlx`, `pnpm exec`. Version figée par `packageManager` + Corepack.
-
 
 - `pnpm dev` : lance api (4000), worker et web (3000)
 - `pnpm build`, `pnpm lint`, `pnpm format:check`, `pnpm test`

@@ -6,13 +6,13 @@ En participant, vous acceptez le [Code de conduite](CODE_OF_CONDUCT.md).
 
 ## Par où commencer
 
-| Vous voulez… | Faites… |
-| --- | --- |
-| Signaler un bug | ouvrez une issue avec le modèle **Bug** |
-| Proposer une idée | ouvrez une issue **Feature**, ou une **Discussion** si l'idée est encore floue |
-| Poser une question | ouvrez une **Discussion**, pas une issue |
-| Coder | choisissez une issue `good first issue` ou `help wanted` |
-| Signaler une faille de sécurité | **pas d'issue publique** : suivez [SECURITY.md](SECURITY.md) |
+| Vous voulez…                    | Faites…                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| Signaler un bug                 | ouvrez une issue avec le modèle **Bug**                                        |
+| Proposer une idée               | ouvrez une issue **Feature**, ou une **Discussion** si l'idée est encore floue |
+| Poser une question              | ouvrez une **Discussion**, pas une issue                                       |
+| Coder                           | choisissez une issue `good first issue` ou `help wanted`                       |
+| Signaler une faille de sécurité | **pas d'issue publique** : suivez [SECURITY.md](SECURITY.md)                   |
 
 ## Fichiers protégés
 
@@ -74,19 +74,19 @@ Puis ouvrez la pull request **vers `develop`** (pas `main`), en remplissant le m
 
 ### Branches
 
-| Préfixe | Usage |
-| --- | --- |
+| Préfixe                      | Usage                   |
+| ---------------------------- | ----------------------- |
 | `feature/<n°-issue>-<sujet>` | nouvelle fonctionnalité |
-| `fix/<n°-issue>-<sujet>` | correction de bug |
-| `docs/<sujet>` | documentation seule |
+| `fix/<n°-issue>-<sujet>`     | correction de bug       |
+| `docs/<sujet>`               | documentation seule     |
 
 ### Commits et titre de PR
 
 Format [Conventional Commits](https://www.conventionalcommits.org/fr/) : `type(zone): description à l'infinitif ou au présent`.
 
-* Types : `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-* Zones : `api`, `worker`, `web`, `db`, `infra`.
-* Le **titre de la PR** suit le même format : il devient le message du commit fusionné.
+- Types : `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
+- Zones : `api`, `worker`, `web`, `db`, `infra`.
+- Le **titre de la PR** suit le même format : il devient le message du commit fusionné.
 
 Un hook vérifie le format à chaque commit.
 
@@ -105,9 +105,9 @@ La CI les relance sur chaque PR : une PR rouge ne peut pas être fusionnée.
 
 ### Tests
 
-* Toute correction de bug ajoute un test qui échouait avant.
-* Tout nouveau calcul de métrique est couvert par des tests sur un jeu de données fixe.
-* Les tests n'appellent jamais GitHub ni un modèle d'IA réel : utilisez les données de test et `SUMMARY_PROVIDER=fake`.
+- Toute correction de bug ajoute un test qui échouait avant.
+- Tout nouveau calcul de métrique est couvert par des tests sur un jeu de données fixe.
+- Les tests n'appellent jamais GitHub ni un modèle d'IA réel : utilisez les données de test et `SUMMARY_PROVIDER=fake`.
 
 ### Code produit avec une IA
 
@@ -115,18 +115,18 @@ Bienvenu, à condition que **vous le compreniez et puissiez l'expliquer** en rev
 
 ### Ce qui n'est jamais accepté
 
-* Un secret, une clé ou un `.env` dans le code.
-* Du code source de dépôts tiers stocké en base (XCadence ne garde que des métadonnées).
-* Une métrique qui classe ou note des développeurs individuellement.
-* Une nouvelle dépendance sans justification dans la PR.
-* Une modification de `CLAUDE.md` ou `.claude/` qui élargit les droits d'un assistant IA, ou tout texte destiné à manipuler l'assistant d'un autre contributeur (voir [docs/08-SECURITE.md](docs/08-SECURITE.md)).
+- Un secret, une clé ou un `.env` dans le code.
+- Du code source de dépôts tiers stocké en base (XCadence ne garde que des métadonnées).
+- Une métrique qui classe ou note des développeurs individuellement.
+- Une nouvelle dépendance sans justification dans la PR.
+- Une modification de `CLAUDE.md` ou `.claude/` qui élargit les droits d'un assistant IA, ou tout texte destiné à manipuler l'assistant d'un autre contributeur (voir [docs/08-SECURITE.md](docs/08-SECURITE.md)).
 
 ## La revue
 
-* Le projet a pour l'instant un seul mainteneur : il répond dès que possible, en général sous quelques jours.
-* Répondez aux commentaires, poussez les corrections sur la même branche : la PR se met à jour.
-* `nit:` = suggestion mineure, non bloquante.
-* Une fois approuvée et verte, un mainteneur la fusionne en **squash**.
+- Le projet a pour l'instant un seul mainteneur : il répond dès que possible, en général sous quelques jours.
+- Répondez aux commentaires, poussez les corrections sur la même branche : la PR se met à jour.
+- `nit:` = suggestion mineure, non bloquante.
+- Une fois approuvée et verte, un mainteneur la fusionne en **squash**.
 
 ## Garder votre fork à jour
 

@@ -4,18 +4,18 @@ XCadence veut être un projet accueillant pour toutes et tous, quels que soient 
 
 ## Ce que nous attendons
 
-* Être respectueux et bienveillant, en particulier envers les nouveaux contributeurs.
-* Critiquer le code et les idées, jamais les personnes.
-* Accepter les retours avec ouverture, et reconnaître ses erreurs.
-* Privilégier ce qui est bon pour le projet et la communauté.
+- Être respectueux et bienveillant, en particulier envers les nouveaux contributeurs.
+- Critiquer le code et les idées, jamais les personnes.
+- Accepter les retours avec ouverture, et reconnaître ses erreurs.
+- Privilégier ce qui est bon pour le projet et la communauté.
 
 ## Ce qui n'est pas acceptable
 
-* Insultes, moqueries, attaques personnelles ou politiques.
-* Harcèlement, public ou privé.
-* Langage ou images à caractère sexuel.
-* Publier des informations privées d'autrui sans son accord.
-* Tout comportement qu'on jugerait raisonnablement inapproprié dans un cadre professionnel.
+- Insultes, moqueries, attaques personnelles ou politiques.
+- Harcèlement, public ou privé.
+- Langage ou images à caractère sexuel.
+- Publier des informations privées d'autrui sans son accord.
+- Tout comportement qu'on jugerait raisonnablement inapproprié dans un cadre professionnel.
 
 ## Où il s'applique
 

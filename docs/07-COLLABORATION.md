@@ -9,19 +9,19 @@ XCadence n'a pour l'instant **qu'un seul mainteneur**. Certaines règles de coll
 
 Ce document décrit donc deux modes. Le **mode solo** est actif. Le **mode équipe** s'active à l'arrivée d'un deuxième contributeur régulier, en suivant [Passer en mode équipe](#passer-en-mode-équipe) : tout est prévu pour basculer en quelques commandes.
 
-| Sujet | Mode solo (actuel) | Mode équipe |
-| --- | --- | --- |
-| Équipes | `xcadence-maintainers` seule | + `xcadence-core`, `xcadence-triage` |
-| Pull request obligatoire | **oui** | oui |
-| Approbation obligatoire | non | 1 approbation |
-| Revue des Code Owners | non (fichier `CODEOWNERS` présent mais non exigé) | oui |
-| Annulation des approbations au nouveau commit | non | oui |
-| Résolution des commentaires | non | oui |
-| CI verte obligatoire (`qualite`, `tests`, `fichiers-proteges`) | **oui**, dès son premier passage | oui |
-| Suppression de branche, force push | **interdits** | interdits |
-| Revue | auto-revue avec la checklist de la PR | revue par une autre personne, sous 5 jours ouvrés |
-| Tri des issues | quand c'est utile | chaque semaine |
-| Contributions externes | acceptées : vous relisez et fusionnez | idem, revue partagée |
+| Sujet                                                          | Mode solo (actuel)                                | Mode équipe                                       |
+| -------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- |
+| Équipes                                                        | `xcadence-maintainers` seule                      | + `xcadence-core`, `xcadence-triage`              |
+| Pull request obligatoire                                       | **oui**                                           | oui                                               |
+| Approbation obligatoire                                        | non                                               | 1 approbation                                     |
+| Revue des Code Owners                                          | non (fichier `CODEOWNERS` présent mais non exigé) | oui                                               |
+| Annulation des approbations au nouveau commit                  | non                                               | oui                                               |
+| Résolution des commentaires                                    | non                                               | oui                                               |
+| CI verte obligatoire (`qualite`, `tests`, `fichiers-proteges`) | **oui**, dès son premier passage                  | oui                                               |
+| Suppression de branche, force push                             | **interdits**                                     | interdits                                         |
+| Revue                                                          | auto-revue avec la checklist de la PR             | revue par une autre personne, sous 5 jours ouvrés |
+| Tri des issues                                                 | quand c'est utile                                 | chaque semaine                                    |
+| Contributions externes                                         | acceptées : vous relisez et fusionnez             | idem, revue partagée                              |
 
 En mode solo, la **CI** et la **pull request** restent obligatoires : elles gardent un historique propre et empêchent de casser `develop` ou `main` par erreur.
 
@@ -31,10 +31,10 @@ Le projet vit dans une **organisation** GitHub, pas sur un compte personnel : el
 
 ### Dépôt public : le choix du budget
 
-| Option | Coût | Contrepartie |
-| --- | --- | --- |
-| Dépôt **public**, organisation gratuite | 0 € | code visible de tous : aucun secret dans le dépôt |
-| Dépôt privé, plan GitHub Team | payant par utilisateur | incompatible avec l'open source |
+| Option                                  | Coût                   | Contrepartie                                      |
+| --------------------------------------- | ---------------------- | ------------------------------------------------- |
+| Dépôt **public**, organisation gratuite | 0 €                    | code visible de tous : aucun secret dans le dépôt |
+| Dépôt privé, plan GitHub Team           | payant par utilisateur | incompatible avec l'open source                   |
 
 XCadence est open source : **dépôt public, organisation gratuite**. Les règles de protection des branches et les minutes GitHub Actions sont alors gratuites.
 
@@ -42,20 +42,20 @@ XCadence est open source : **dépôt public, organisation gratuite**. Les règle
 
 L'organisation **`kuami-labs`** est neutre : elle héberge XCadence et les projets à venir. Les équipes suivent cette logique :
 
-* **Chaque projet a ses propres équipes**, préfixées par son nom, y compris ses mainteneurs : `xcadence-maintainers`, `xcadence-core`, `xcadence-triage`. Un futur projet `autre` aura `autre-maintainers`, `autre-core`, `autre-triage`.
-* Un mainteneur d'XCadence n'a donc **aucun droit d'administration** sur les autres dépôts, et inversement.
-* Au-dessus, seuls les **propriétaires de l'organisation** (vous, et éventuellement une personne de confiance) gèrent l'organisation elle-même : facturation, sécurité, création des dépôts et des équipes.
+- **Chaque projet a ses propres équipes**, préfixées par son nom, y compris ses mainteneurs : `xcadence-maintainers`, `xcadence-core`, `xcadence-triage`. Un futur projet `autre` aura `autre-maintainers`, `autre-core`, `autre-triage`.
+- Un mainteneur d'XCadence n'a donc **aucun droit d'administration** sur les autres dépôts, et inversement.
+- Au-dessus, seuls les **propriétaires de l'organisation** (vous, et éventuellement une personne de confiance) gèrent l'organisation elle-même : facturation, sécurité, création des dépôts et des équipes.
 
 ### Les équipes et les rôles
 
 Principe : **le moins de droits possible**, on élargit à la demande et après contributions régulières.
 
-| Équipe | Rôle sur le dépôt | Peut | Pour qui |
-| --- | --- | --- | --- |
-| `xcadence-maintainers` | Admin | tout, dont les règles et les releases | 1 à 2 personnes |
-| `xcadence-core` | Write | pousser des branches, fusionner des PR | contributeurs réguliers et de confiance |
-| `xcadence-triage` | Triage | trier les issues, poser des labels, relire | contributeurs qui aident à l'organisation |
-| Tout le monde | Read (public) | forker, ouvrir des issues et des PR | contributeurs externes |
+| Équipe                 | Rôle sur le dépôt | Peut                                       | Pour qui                                  |
+| ---------------------- | ----------------- | ------------------------------------------ | ----------------------------------------- |
+| `xcadence-maintainers` | Admin             | tout, dont les règles et les releases      | 1 à 2 personnes                           |
+| `xcadence-core`        | Write             | pousser des branches, fusionner des PR     | contributeurs réguliers et de confiance   |
+| `xcadence-triage`      | Triage            | trier les issues, poser des labels, relire | contributeurs qui aident à l'organisation |
+| Tout le monde          | Read (public)     | forker, ouvrir des issues et des PR        | contributeurs externes                    |
 
 > **Mode solo** : seule `xcadence-maintainers` est créée, avec vous comme unique membre. `xcadence-core` et `xcadence-triage` sont créées au passage en mode équipe.
 
@@ -65,7 +65,7 @@ Principe : **le moins de droits possible**, on élargit à la demande et après 
 2. **Settings** → **Authentication security** : exigez la **2FA** pour tous les membres. Un projet public est une cible.
 3. **Settings** → **Member privileges** → **Base permissions** : **Read**.
 4. **Settings** → **Member privileges** → **Repository deletion and transfer** : réservé aux propriétaires.
-5. **Settings** → *Planning* → **Issue types** : ajoutez `Spike` à `Task`, `Bug` et `Feature`.
+5. **Settings** → _Planning_ → **Issue types** : ajoutez `Spike` à `Task`, `Bug` et `Feature`.
 6. **Teams** : pour chaque projet, créez son équipe de mainteneurs, ici `xcadence-maintainers`. En mode équipe, ajoutez `xcadence-core` et `xcadence-triage`.
 7. Pour chaque nouveau projet : créez le dépôt **vide** (ici `xcadence`), puis **Settings** → **Collaborators and teams** : ajoutez chaque équipe existante avec son rôle.
 
@@ -73,42 +73,42 @@ Principe : **le moins de droits possible**, on élargit à la demande et après 
 
 ## Le modèle de branches : GitFlow allégé
 
-| Branche | Rôle | Alimentée par |
-| --- | --- | --- |
-| `main` | la dernière version publiée, toujours déployable | une PR depuis `develop` (release) ou `hotfix/*` |
-| `develop` | l'intégration, **branche par défaut** | une PR depuis `feature/*` ou `fix/*` |
-| `feature/*` | une fonctionnalité, quelques jours au plus | son auteur |
-| `fix/*` | une correction non urgente | son auteur |
-| `hotfix/*` | une correction urgente de `main` | un mainteneur |
-| `docs/*` | documentation seule | son auteur |
+| Branche     | Rôle                                             | Alimentée par                                   |
+| ----------- | ------------------------------------------------ | ----------------------------------------------- |
+| `main`      | la dernière version publiée, toujours déployable | une PR depuis `develop` (release) ou `hotfix/*` |
+| `develop`   | l'intégration, **branche par défaut**            | une PR depuis `feature/*` ou `fix/*`            |
+| `feature/*` | une fonctionnalité, quelques jours au plus       | son auteur                                      |
+| `fix/*`     | une correction non urgente                       | son auteur                                      |
+| `hotfix/*`  | une correction urgente de `main`                 | un mainteneur                                   |
+| `docs/*`    | documentation seule                              | son auteur                                      |
 
-* Les contributeurs externes travaillent sur une branche **de leur fork** et ouvrent la PR vers `develop`.
-* Pas de branche `release/*` : `develop` est fusionnée dans `main` au moment d'une release, puis taguée.
-* Un hotfix fusionné dans `main` est aussi reporté dans `develop`.
+- Les contributeurs externes travaillent sur une branche **de leur fork** et ouvrent la PR vers `develop`.
+- Pas de branche `release/*` : `develop` est fusionnée dans `main` au moment d'une release, puis taguée.
+- Un hotfix fusionné dans `main` est aussi reporté dans `develop`.
 
 ### Les réglages du dépôt
 
 **Settings** → **General** :
 
-* **Default branch** : `develop`.
-* **Pull Requests** : autorisez le **squash** (une PR = un commit sur `develop`) et les **merge commits** (`develop` → `main`). Désactivez le rebase merge.
-* Cochez **Automatically delete head branches**.
-* **Features** : activez **Issues** et **Discussions** (questions et idées hors bugs).
+- **Default branch** : `develop`.
+- **Pull Requests** : autorisez le **squash** (une PR = un commit sur `develop`) et les **merge commits** (`develop` → `main`). Désactivez le rebase merge.
+- Cochez **Automatically delete head branches**.
+- **Features** : activez **Issues** et **Discussions** (questions et idées hors bugs).
 
 ### Les règles de protection
 
 **Settings** → **Rules** → **Rulesets** → **New branch ruleset**, nommé `protection`, ciblant `main` et `develop` :
 
-| Règle | Effet | Solo | Équipe |
-| --- | --- | --- | --- |
-| Restrict deletions | personne ne supprime la branche | ✅ | ✅ |
-| Block force pushes | personne ne réécrit l'historique | ✅ | ✅ |
-| Require a pull request before merging | aucun push direct | ✅ | ✅ |
-| ↳ Required approvals | une autre personne relit | 0 | 1 |
-| ↳ Dismiss stale approvals when new commits are pushed | un nouveau commit annule l'approbation | ❌ | ✅ |
-| ↳ Require review from Code Owners | les fichiers sensibles exigent un mainteneur | ❌ | ✅ |
-| ↳ Require conversation resolution | tous les commentaires de revue sont traités | ❌ | ✅ |
-| Require status checks to pass : `qualite`, `tests`, `fichiers-proteges` | la CI doit être verte ; les fichiers protégés restent intouchables ([08-SECURITE.md](08-SECURITE.md#fichiers-protégés)) | ✅ après le premier passage de la CI | ✅ |
+| Règle                                                                   | Effet                                                                                                                   | Solo                                 | Équipe |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ------ |
+| Restrict deletions                                                      | personne ne supprime la branche                                                                                         | ✅                                   | ✅     |
+| Block force pushes                                                      | personne ne réécrit l'historique                                                                                        | ✅                                   | ✅     |
+| Require a pull request before merging                                   | aucun push direct                                                                                                       | ✅                                   | ✅     |
+| ↳ Required approvals                                                    | une autre personne relit                                                                                                | 0                                    | 1      |
+| ↳ Dismiss stale approvals when new commits are pushed                   | un nouveau commit annule l'approbation                                                                                  | ❌                                   | ✅     |
+| ↳ Require review from Code Owners                                       | les fichiers sensibles exigent un mainteneur                                                                            | ❌                                   | ✅     |
+| ↳ Require conversation resolution                                       | tous les commentaires de revue sont traités                                                                             | ❌                                   | ✅     |
+| Require status checks to pass : `qualite`, `tests`, `fichiers-proteges` | la CI doit être verte ; les fichiers protégés restent intouchables ([08-SECURITE.md](08-SECURITE.md#fichiers-protégés)) | ✅ après le premier passage de la CI | ✅     |
 
 Laissez la **bypass list** vide : vous passez aussi par une PR. Une PR solo se fusionne dès que la CI est verte.
 
@@ -142,48 +142,47 @@ pnpm-lock.yaml             @kuami-labs/xcadence-maintainers
 
 ### Types et labels
 
-| Label | Sens |
-| --- | --- |
-| `good first issue` | petite tâche, bien décrite, idéale pour un premier contributeur |
-| `help wanted` | les mainteneurs cherchent quelqu'un pour la prendre |
-| `area:api`, `area:worker`, `area:web`, `area:db`, `area:infra` | partie du code concernée |
-| `priority:high`, `priority:low` | urgence |
-| `needs-triage` | pas encore examinée (posé automatiquement) |
-| `blocked` | attend une décision ou une autre tâche |
-| `fichier-protege` | demande de changement d'un fichier protégé : un mainteneur le fera |
+| Label                                                          | Sens                                                               |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `good first issue`                                             | petite tâche, bien décrite, idéale pour un premier contributeur    |
+| `help wanted`                                                  | les mainteneurs cherchent quelqu'un pour la prendre                |
+| `area:api`, `area:worker`, `area:web`, `area:db`, `area:infra` | partie du code concernée                                           |
+| `priority:high`, `priority:low`                                | urgence                                                            |
+| `needs-triage`                                                 | pas encore examinée (posé automatiquement)                         |
+| `blocked`                                                      | attend une décision ou une autre tâche                             |
+| `fichier-protege`                                              | demande de changement d'un fichier protégé : un mainteneur le fera |
 
 ### Règle de travail
 
 **Demande de changement d'un fichier protégé** (modèle d'issue dédié) : le mainteneur évalue ; s'il accepte, il fait le changement sur une branche `chore/<n°>-…`, avec `Co-authored-by: <contributeur>` dans le message de commit (ou en récupérant le commit relu du fork par `git cherry-pick`), ouvre sa PR et la fusionne. Le contributeur rebase ensuite sa PR sur `develop`.
 
-
-* **Une PR = une issue.** Pour un changement plus gros qu'une coquille, ouvrez ou commentez d'abord une issue, et attendez qu'un mainteneur valide l'approche.
-* Pour prendre une issue, commentez « Je la prends ». Un mainteneur vous l'assigne. Sans nouvelle sous 14 jours, elle redevient libre.
-* Les nouvelles issues sont triées (type, labels, priorité) : **quand c'est utile** en mode solo, **chaque semaine** en mode équipe.
+- **Une PR = une issue.** Pour un changement plus gros qu'une coquille, ouvrez ou commentez d'abord une issue, et attendez qu'un mainteneur valide l'approche.
+- Pour prendre une issue, commentez « Je la prends ». Un mainteneur vous l'assigne. Sans nouvelle sous 14 jours, elle redevient libre.
+- Les nouvelles issues sont triées (type, labels, priorité) : **quand c'est utile** en mode solo, **chaque semaine** en mode équipe.
 
 ## Les commits
 
 Messages au format [Conventional Commits](https://www.conventionalcommits.org/fr/) : ils produisent le changelog automatiquement.
 
-| Préfixe | Usage | Exemple |
-| --- | --- | --- |
-| `feat:` | nouvelle fonctionnalité | `feat(web): filtre par période sur le tableau de bord` |
-| `fix:` | correction de bug | `fix(worker): ignorer les PR en brouillon` |
-| `docs:` | documentation | `docs: étape WSL dans l'environnement` |
-| `refactor:` | sans changement de comportement | `refactor(api): extraire le guard d'organisation` |
-| `test:` | tests seuls | `test(metrics): cas sans déploiement` |
-| `chore:` | outillage, dépendances | `chore: mise à jour de Prisma` |
+| Préfixe     | Usage                           | Exemple                                                |
+| ----------- | ------------------------------- | ------------------------------------------------------ |
+| `feat:`     | nouvelle fonctionnalité         | `feat(web): filtre par période sur le tableau de bord` |
+| `fix:`      | correction de bug               | `fix(worker): ignorer les PR en brouillon`             |
+| `docs:`     | documentation                   | `docs: étape WSL dans l'environnement`                 |
+| `refactor:` | sans changement de comportement | `refactor(api): extraire le guard d'organisation`      |
+| `test:`     | tests seuls                     | `test(metrics): cas sans déploiement`                  |
+| `chore:`    | outillage, dépendances          | `chore: mise à jour de Prisma`                         |
 
 Avec le squash, c'est le **titre de la PR** qui devient le message du commit : il doit donc respecter ce format.
 
 ## La qualité avant le commit
 
-| Outil | Rôle |
-| --- | --- |
-| [ESLint](https://typescript-eslint.io/getting-started) | erreurs probables : variable inutilisée, promesse oubliée, `any` explicite |
-| [Prettier](https://prettier.io) | la forme : plus de débat de style en revue |
-| [husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | hook `pre-commit` sur les seuls fichiers du commit |
-| [commitlint](https://commitlint.js.org) | hook `commit-msg` : vérifie le format Conventional Commits |
+| Outil                                                                                                  | Rôle                                                                       |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [ESLint](https://typescript-eslint.io/getting-started)                                                 | erreurs probables : variable inutilisée, promesse oubliée, `any` explicite |
+| [Prettier](https://prettier.io)                                                                        | la forme : plus de débat de style en revue                                 |
+| [husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) | hook `pre-commit` sur les seuls fichiers du commit                         |
+| [commitlint](https://commitlint.js.org)                                                                | hook `commit-msg` : vérifie le format Conventional Commits                 |
 
 Installation, à la racine, dans le dev container :
 
@@ -217,18 +216,19 @@ export default defineConfig(
 ```json
 "scripts": {
   "prepare": "husky",
-  "lint": "eslint .",
+  "lint": "eslint --flag v10_config_lookup_from_file .",
   "format": "prettier --write . '!db/data'",
   "format:check": "prettier --check . '!db/data'"
 },
 "lint-staged": {
-  "*.{ts,tsx,js,mjs}": ["eslint --fix", "prettier --write"],
+  "*.{ts,tsx,js,mjs}": ["eslint --flag v10_config_lookup_from_file --fix", "prettier --write"],
   "*.{json,md,yml,yaml,css}": "prettier --write"
 }
 ```
 
-* Le script `prepare` installe les hooks à chaque `pnpm install` : rien à faire pour les contributeurs.
-* **Le hook tourne dans le conteneur**, même quand on commite depuis WSL (Claude Desktop) : les hooks appellent `docker compose exec -T dev …` si `node` est absent de la machine.
+- `--flag v10_config_lookup_from_file` : chaque fichier utilise le `eslint.config.mjs` le plus proche. `apps/web` garde ainsi la configuration officielle de Next.js (`eslint-config-next`), qui impose ESLint 9.
+- Le script `prepare` installe les hooks à chaque `pnpm install` : rien à faire pour les contributeurs.
+- **Le hook tourne dans le conteneur**, même quand on commite depuis WSL (Claude Desktop) : les hooks appellent `docker compose exec -T dev …` si `node` est absent de la machine.
 
 `.husky/pre-commit`
 
@@ -256,10 +256,10 @@ Les contributeurs peuvent utiliser Claude Code ou tout autre outil d'IA, **et le
 
 Une seule règle : **la personne qui soumet la contribution en est responsable**. Elle comprend le code, l'a testé et sait l'expliquer en revue (case du modèle de PR).
 
-* Lors d'un squash, **conservez** les lignes `Co-authored-by` proposées par GitHub : elles reconnaissent le travail de chacun.
-* Préférence personnelle d'un contributeur (par exemple ne pas mentionner l'outil) : elle se règle **sur sa machine**, dans des fichiers non versionnés :
-  * `.claude/settings.local.json` : `{ "attribution": { "commit": "", "pr": "" } }`
-  * `CLAUDE.local.md` : consignes personnelles pour ses propres sessions.
+- Lors d'un squash, **conservez** les lignes `Co-authored-by` proposées par GitHub : elles reconnaissent le travail de chacun.
+- Préférence personnelle d'un contributeur (par exemple ne pas mentionner l'outil) : elle se règle **sur sa machine**, dans des fichiers non versionnés :
+  - `.claude/settings.local.json` : `{ "attribution": { "commit": "", "pr": "" } }`
+  - `CLAUDE.local.md` : consignes personnelles pour ses propres sessions.
 
 ## L'intégration continue
 
@@ -315,10 +315,10 @@ jobs:
       - run: pnpm test
 ```
 
-* **`container: node:24-trixie`** : même système et même Node que le dev container.
-* **Deux jobs, deux checks** : `qualite` et `tests`, à exiger dans le ruleset une fois qu'ils ont tourné une fois.
-* **`permissions: contents: read`** et aucun secret : une PR venant d'un fork ne peut rien exfiltrer.
-* **`SUMMARY_PROVIDER: fake`** : la CI n'appelle jamais de modèle d'IA, donc ne coûte rien.
+- **`container: node:24-trixie`** : même système et même Node que le dev container.
+- **Deux jobs, deux checks** : `qualite` et `tests`, à exiger dans le ruleset une fois qu'ils ont tourné une fois.
+- **`permissions: contents: read`** et aucun secret : une PR venant d'un fork ne peut rien exfiltrer.
+- **`SUMMARY_PROVIDER: fake`** : la CI n'appelle jamais de modèle d'IA, donc ne coûte rien.
 
 ### Dependabot
 
@@ -327,7 +327,7 @@ jobs:
 ```yaml
 version: 2
 updates:
-  - package-ecosystem: npm   # couvre aussi pnpm (pnpm-lock.yaml)
+  - package-ecosystem: npm # couvre aussi pnpm (pnpm-lock.yaml)
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
@@ -344,17 +344,17 @@ Activez aussi **Settings** → **Code security** : Dependabot alerts, Secret sca
 
 **Mode équipe** :
 
-| Qui relit | Quoi vérifier |
-| --- | --- |
-| Un membre de `xcadence-core` ou `xcadence-maintainers` | la PR répond à l'issue, rien de plus |
-| | les tests couvrent le nouveau comportement |
-| | aucun secret, aucune donnée personnelle ajoutée |
-| | le code produit avec une IA est compris par son auteur |
-| | la doc est à jour si le comportement change |
+| Qui relit                                              | Quoi vérifier                                          |
+| ------------------------------------------------------ | ------------------------------------------------------ |
+| Un membre de `xcadence-core` ou `xcadence-maintainers` | la PR répond à l'issue, rien de plus                   |
+|                                                        | les tests couvrent le nouveau comportement             |
+|                                                        | aucun secret, aucune donnée personnelle ajoutée        |
+|                                                        | le code produit avec une IA est compris par son auteur |
+|                                                        | la doc est à jour si le comportement change            |
 
-* Délai cible : **première réponse sous 5 jours ouvrés** (contributions externes, dans les deux modes : dès que possible).
-* Un commentaire préfixé `nit:` est une suggestion mineure, non bloquante.
-* On relit le code, pas la personne : remarques précises, ton bienveillant ([Code de conduite](../CODE_OF_CONDUCT.md)).
+- Délai cible : **première réponse sous 5 jours ouvrés** (contributions externes, dans les deux modes : dès que possible).
+- Un commentaire préfixé `nit:` est une suggestion mineure, non bloquante.
+- On relit le code, pas la personne : remarques précises, ton bienveillant ([Code de conduite](../CODE_OF_CONDUCT.md)).
 
 ## Les décisions d'architecture (ADR)
 
@@ -368,9 +368,13 @@ Toute décision qui engage le projet (nouvelle dépendance majeure, changement d
 - Décideurs : …
 
 ## Contexte
+
 ## Options
+
 ## Décision
+
 ## Conséquences
+
 - Positives :
 - Négatives, à accepter :
 - À revoir si :
@@ -431,13 +435,13 @@ Pour **revenir en mode solo** (départ du seul autre contributeur), faites l'inv
 
 ## Fichiers communautaires
 
-| Fichier | Rôle |
-| --- | --- |
-| `README.md` | ce que fait XCadence, capture, démarrage rapide |
-| `LICENSE` | licence open source AGPL-3.0 |
-| `CONTRIBUTING.md` | comment contribuer, pas à pas |
-| `CODE_OF_CONDUCT.md` | règles de comportement |
-| `SECURITY.md` | signaler une faille en privé |
-| `docs/08-SECURITE.md` | règles de sécurité du projet |
-| `.github/ISSUE_TEMPLATE/` | modèles de bug et de demande de fonctionnalité |
-| `.github/pull_request_template.md` | modèle de PR |
+| Fichier                            | Rôle                                            |
+| ---------------------------------- | ----------------------------------------------- |
+| `README.md`                        | ce que fait XCadence, capture, démarrage rapide |
+| `LICENSE`                          | licence open source AGPL-3.0                    |
+| `CONTRIBUTING.md`                  | comment contribuer, pas à pas                   |
+| `CODE_OF_CONDUCT.md`               | règles de comportement                          |
+| `SECURITY.md`                      | signaler une faille en privé                    |
+| `docs/08-SECURITE.md`              | règles de sécurité du projet                    |
+| `.github/ISSUE_TEMPLATE/`          | modèles de bug et de demande de fonctionnalité  |
+| `.github/pull_request_template.md` | modèle de PR                                    |

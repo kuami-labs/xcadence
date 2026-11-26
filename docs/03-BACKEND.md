@@ -26,39 +26,67 @@ GitHub pousse les événements à l'API, qui les enregistre et les met en file ;
 
 ## Modules NestJS
 
-| Module | Processus | Responsabilité |
-| --- | --- | --- |
-| `AuthModule` | API | Connexion GitHub OAuth, sessions, guard par organisation |
-| `GithubModule` | API + worker | Client Octokit authentifié par installation, gestion des quotas |
-| `WebhooksModule` | API | Vérifie la signature, enregistre l'événement, enfile un job, répond 202 |
-| `SyncModule` | Worker | Import initial sur 90 jours, traitement des événements, resynchronisation nocturne |
-| `MetricsModule` | Worker | Calcule les 7 métriques par semaine et par dépôt, écrit `weekly_metrics` |
-| `InsightsModule` | Worker | Génère le résumé hebdomadaire via `SummaryProvider`, détecte les alertes |
-| `NotificationsModule` | Worker | Envoie le résumé et les alertes par email |
-| `DashboardModule` | API | Endpoints de lecture pour le front |
+| Module                | Processus    | Responsabilité                                                                     |
+| --------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| `AuthModule`          | API          | Connexion GitHub OAuth, sessions, guard par organisation                           |
+| `GithubModule`        | API + worker | Client Octokit authentifié par installation, gestion des quotas                    |
+| `WebhooksModule`      | API          | Vérifie la signature, enregistre l'événement, enfile un job, répond 202            |
+| `SyncModule`          | Worker       | Import initial sur 90 jours, traitement des événements, resynchronisation nocturne |
+| `MetricsModule`       | Worker       | Calcule les 7 métriques par semaine et par dépôt, écrit `weekly_metrics`           |
+| `InsightsModule`      | Worker       | Génère le résumé hebdomadaire via `SummaryProvider`, détecte les alertes           |
+| `NotificationsModule` | Worker       | Envoie le résumé et les alertes par email                                          |
+| `DashboardModule`     | API          | Endpoints de lecture pour le front                                                 |
 
 ## Endpoints principaux
 
-| Méthode et route | Rôle |
-| --- | --- |
-| `GET /auth/github`, `GET /auth/github/callback` | Connexion |
-| `POST /webhooks/github` | Réception des événements GitHub |
-| `GET /orgs/:orgId/repositories` | Dépôts et statut de suivi |
-| `PATCH /orgs/:orgId/repositories/:id` | Suivre un dépôt, règle de déploiement |
-| `GET /orgs/:orgId/metrics?repo=&from=&to=` | Métriques DORA et de flux par semaine |
-| `GET /orgs/:orgId/bottlenecks` | PR bloquées, jobs de CI lents |
-| `GET /orgs/:orgId/summaries/latest` | Dernier résumé |
-| `GET /orgs/:orgId/sync-status` | Avancement de l'import |
+| Méthode et route                                          | Rôle                                                                    |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `GET /auth/github`, `GET /auth/github/callback`           | Connexion                                                               |
+| `GET /auth/me`, `POST /auth/logout`                       | Utilisateur connecté et ses organisations ; déconnexion                 |
+| `POST /webhooks/github`                                   | Réception des événements GitHub                                         |
+| `GET /orgs/:orgId/repositories`                           | Dépôts et statut de suivi                                               |
+| `PATCH /orgs/:orgId/repositories/:id`                     | Suivre un dépôt ; environnements de production (`deployRule`, recalcul) |
+| `GET /orgs/:orgId/repositories/:id/environments`          | Environnements vus dans les déploiements, et ceux comptés en production |
+| `GET /orgs/:orgId/repositories/:id/pull-requests`         | PR récentes d'un dépôt (sans auteur)                                    |
+| `GET /orgs/:orgId/metrics?repo=&from=&to=`                | Métriques DORA et de flux par semaine                                   |
+| `GET /orgs/:orgId/bottlenecks`                            | PR bloquées, jobs de CI lents                                           |
+| `GET /orgs/:orgId/summaries/latest`                       | Dernier résumé                                                          |
+| `GET /orgs/:orgId/sync-status`                            | Avancement de l'import                                                  |
+| `GET`, `POST /orgs/:orgId/summary-recipients`             | Destinataires du résumé par email                                       |
+| `DELETE /orgs/:orgId/summary-recipients/:id`              | Retirer un destinataire                                                 |
+| `GET`, `POST /summary-recipients/unsubscribe?token=`      | Désinscription publique en un clic (lien et RFC 8058, ADR 0005)         |
+| `GET /config`                                             | Réglages publics du front (adresse d'installation de la GitHub App)     |
+| `GET /demo`, `GET /demo/metrics`, `GET /demo/bottlenecks` | Démo publique, sans session et en lecture seule (ADR 0006)              |
 
 ## Jobs BullMQ
 
-| Job | Déclencheur | Rôle |
-| --- | --- | --- |
-| `backfill-repository` | Ajout d'un dépôt suivi | Importe 90 jours de PR, revues, déploiements et runs |
-| `process-webhook-event` | Chaque webhook reçu | Met à jour les données brutes concernées |
-| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics` |
-| `generate-weekly-summary` | Lundi 7 h | Génère le résumé IA de la semaine |
-| `send-notifications` | Après le résumé ou une alerte | Envoie les emails |
+| Job                        | Déclencheur                        | Rôle                                                                                 |
+| -------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------ |
+| `backfill-repository`      | Ajout d'un dépôt suivi             | Importe 90 jours de PR, revues, déploiements et runs                                 |
+| `process-webhook-event`    | Chaque webhook reçu                | Met à jour les données brutes concernées                                             |
+| `recompute-weekly-metrics` | Chaque nuit, et après un événement | Recalcule `weekly_metrics`                                                           |
+| `generate-weekly-summary`  | Lundi 7 h UTC                      | Génère le résumé IA de la semaine écoulée, vérifié, ou un repli sans IA (ADR 0004)   |
+| `send-notifications`       | Après chaque résumé écrit          | Crée un `send-summary-email` par destinataire, une seule fois (`sent_at`)            |
+| `send-summary-email`       | `send-notifications`               | Envoie un email par SMTP (Mailpit en dev, Resend en production : ADR 0005), 3 essais |
+
+## Démo publique
+
+Une de nos organisations, où la GitHub App est installée, sert de démo en lecture seule (ADR 0006) :
+
+```bash
+pnpm --filter @xcadence/worker build
+pnpm --filter @xcadence/worker demo:enable kuami-labs
+pnpm --filter @xcadence/worker demo:disable
+```
+
+`demo:enable` relit la visibilité des dépôts de l'installation, puis fait de cette organisation la seule organisation de démo. Seuls ses dépôts suivis et publics sont montrés.
+
+`GET /demo`, `/demo/metrics` et `/demo/bottlenecks` sont publics (aucune session, limitation de débit) et ne servent que l'organisation de démo :
+
+- `/demo` donne son nom et ses dépôts suivis et publics ;
+- `/demo/metrics?repo=` refuse (404) un dépôt privé, non suivi ou d'une autre organisation ; sans `repo`, l'agrégat de l'organisation n'est servi que si aucun dépôt privé suivi n'y entre ;
+- `/demo/bottlenecks` se limite aux dépôts publics ;
+- ni résumé IA, ni état des imports, ni écriture : 404 sans démo.
 
 ## Sécurité
 

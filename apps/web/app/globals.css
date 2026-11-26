@@ -139,3 +139,37 @@
     font-feature-settings: 'cv11', 'ss01';
   }
 }
+
+/* Décor 3D de la landing (components/landing/hero-scene.tsx). */
+@keyframes xc-flow {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 88px,
+      0 0;
+  }
+}
+
+@keyframes xc-float {
+  0%,
+  100% {
+    transform: translateZ(0);
+  }
+  50% {
+    transform: translateZ(18px);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

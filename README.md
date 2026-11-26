@@ -87,6 +87,7 @@ Stack : TypeScript, pnpm et Turborepo, NestJS, Next.js, Prisma et PostgreSQL 17,
 | Stack et structure du monorepo                 | [docs/02-STACK.md](docs/02-STACK.md)                 |
 | Backend : modules, endpoints, jobs             | [docs/03-BACKEND.md](docs/03-BACKEND.md)             |
 | Frontend : pages, composants                   | [docs/04-FRONTEND.md](docs/04-FRONTEND.md)           |
+| Système de design : jetons, composants, règles | [DESIGN.md](DESIGN.md)                               |
 | Base de données                                | [docs/05-DATABASE.md](docs/05-DATABASE.md)           |
 | Environnement, `.env`, GitHub App de dev       | [docs/06-ENVIRONNEMENT.md](docs/06-ENVIRONNEMENT.md) |
 | Branches, qualité, CI, revue                   | [docs/07-COLLABORATION.md](docs/07-COLLABORATION.md) |

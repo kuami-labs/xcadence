@@ -1,13 +1,16 @@
 'use client';
 
+import { BottlenecksSummary } from '@/components/dashboard/bottlenecks-summary';
 import { DashboardView, useDashboardFilters } from '@/components/dashboard/dashboard-view';
 import { DemoBanner } from '@/components/demo-banner';
-import { useDemo, useDemoMetrics } from '@/hooks/use-demo';
+import { PageBody, PageHeader, PageState } from '@/components/page-header';
+import { useDemo, useDemoBottlenecks, useDemoMetrics } from '@/hooks/use-demo';
 
 /** Tableau de bord de la démo publique : sans session, lecture seule. */
 export function DemoDashboard() {
   const demo = useDemo();
   const filters = useDashboardFilters();
+  const bottlenecks = useDemoBottlenecks();
   const data = demo.data;
   // Sans agrégat disponible, le premier dépôt public est affiché par défaut.
   const repo =
@@ -19,29 +22,39 @@ export function DemoDashboard() {
     Boolean(data) && (repo !== null || Boolean(data?.organizationMetrics)),
   );
 
-  if (demo.isPending) return <p className="p-8 text-muted-foreground">Chargement…</p>;
+  if (demo.isPending)
+    return (
+      <PageBody>
+        <PageState>Chargement…</PageState>
+      </PageBody>
+    );
   if (demo.isError) return <NoDemo />;
 
   return (
-    <>
-      <DemoBanner organization={demo.data.organization.name} />
-      <DashboardView
-        subtitle={demo.data.organization.name}
-        filters={{ ...filters, repo }}
-        metrics={metrics}
-        repositories={demo.data.repositories}
-        allowOrganization={demo.data.organizationMetrics}
-        empty="Pas encore de métrique sur cette période."
-      />
-    </>
+    <DashboardView
+      subtitle={`${demo.data.organization.name} · démo publique`}
+      notice={<DemoBanner organization={demo.data.organization.name} />}
+      filters={{ ...filters, repo }}
+      metrics={metrics}
+      repositories={demo.data.repositories}
+      allowOrganization={demo.data.organizationMetrics}
+      empty="Pas encore de métrique sur cette période."
+      bottlenecks={
+        bottlenecks.isError ? null : (
+          <BottlenecksSummary data={bottlenecks.data} href="/demo/bottlenecks" />
+        )
+      }
+    />
   );
 }
 
 export function NoDemo() {
   return (
-    <main className="mx-auto w-full max-w-5xl p-8">
-      <h1 className="text-2xl font-semibold">Démo</h1>
-      <p className="mt-2 text-muted-foreground">Aucune démo publique pour l&apos;instant.</p>
+    <main className="flex flex-1 flex-col">
+      <PageHeader title="Démo" />
+      <PageBody>
+        <PageState>Aucune démo publique pour l&apos;instant.</PageState>
+      </PageBody>
     </main>
   );
 }

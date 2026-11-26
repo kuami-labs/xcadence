@@ -1,10 +1,10 @@
-import { Suspense } from 'react';
+import { ClientPage } from '@/components/client-page';
 import { Dashboard } from './dashboard';
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-muted-foreground">Chargement…</p>}>
+    <ClientPage>
       <Dashboard />
-    </Suspense>
+    </ClientPage>
   );
 }

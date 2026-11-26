@@ -141,3 +141,31 @@ export function formatValue(value: number | null): string {
   if (value === null) return '—';
   return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(value);
 }
+
+/**
+ * Une valeur par semaine de la période, dans l'ordre, pour le graphique en barres.
+ * Semaine sans donnée : 0 pour une métrique par semaine (aucun déploiement), null sinon.
+ */
+export function weeklySeries(
+  values: MetricValue[],
+  metric: MetricDefinition,
+  period: Period,
+): { weekStart: string; value: number | null }[] {
+  const byWeek = new Map(
+    values.filter((v) => v.metricKey === metric.key).map((v) => [v.weekStart, v.value]),
+  );
+  const series: { weekStart: string; value: number | null }[] = [];
+  for (
+    let t = new Date(`${period.from}T00:00:00Z`).getTime();
+    t <= new Date(`${period.to}T00:00:00Z`).getTime();
+    t += 7 * DAY_MS
+  ) {
+    const weekStart = new Date(t).toISOString().slice(0, 10);
+    const value = byWeek.get(weekStart);
+    series.push({
+      weekStart,
+      value: value ?? (metric.aggregate === 'perWeek' ? 0 : null),
+    });
+  }
+  return series;
+}

@@ -1,6 +1,14 @@
 import { METRIC_KEYS, type MetricValue } from '@xcadence/shared';
 import { describe, expect, it } from 'vitest';
-import { DORA_CARDS, formatValue, mondayOf, periods, summarize, trend } from './summary';
+import {
+  DORA_CARDS,
+  formatValue,
+  mondayOf,
+  periods,
+  summarize,
+  trend,
+  weeklySeries,
+} from './summary';
 
 const [frequency, leadTime] = DORA_CARDS;
 const v = (
@@ -68,5 +76,28 @@ describe('résumé des métriques', () => {
   it('formate les valeurs', () => {
     expect(formatValue(null)).toBe('—');
     expect(formatValue(7.25)).toBe('7,3');
+  });
+
+  it('donne une valeur par semaine, sans trou', () => {
+    const period = { from: '2026-11-02', to: '2026-11-29' };
+    const values = [
+      v(METRIC_KEYS.deploymentFrequency, '2026-11-09', 3, 3),
+      v(METRIC_KEYS.leadTime, '2026-11-09', 12.5, 4),
+      v(METRIC_KEYS.leadTime, '2026-10-26', 99, 1),
+    ];
+    // Fréquence : une semaine sans déploiement vaut zéro.
+    expect(weeklySeries(values, frequency, period)).toEqual([
+      { weekStart: '2026-11-02', value: 0 },
+      { weekStart: '2026-11-09', value: 3 },
+      { weekStart: '2026-11-16', value: 0 },
+      { weekStart: '2026-11-23', value: 0 },
+    ]);
+    // Délai : une semaine sans PR déployée n'a pas de valeur ; hors période, ignorée.
+    expect(weeklySeries(values, leadTime, period).map((w) => w.value)).toEqual([
+      null,
+      12.5,
+      null,
+      null,
+    ]);
   });
 });

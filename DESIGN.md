@@ -62,6 +62,10 @@ Polices chargées par `next/font` dans `app/layout.tsx` : **Inter** (texte) et *
 
 Grille de 4 px (échelle Tailwind). Repères : 16 px de marge latérale sur mobile, 32 px sur bureau ; 20 px entre cartes ; 24 px de padding de carte ; 28 px (pages) à 112 px (sections de landing) entre blocs.
 
+### Logo
+
+Quatre facettes (les 4 métriques DORA) éclairées du haut ; le creux dessine le X, la facette de droite le C. Fichiers, construction, couleurs et règles d'usage : [docs/brand/](docs/brand/README.md). Dans l'interface, toujours le composant `Logo` / `LogoSymbol` (version petite taille, couleurs `--logo-1` à `--logo-4` et `--logo-word`, clair et sombre) ; jamais une image recolorée.
+
 ### Icônes
 
 [Lucide](https://lucide.dev) (`lucide-react`), trait de 2 px, 16 px dans la navigation et les boutons, 14 px dans les tendances. Décoratives : `aria-hidden`. Bouton icône seul : `aria-label` obligatoire. Pas d'emoji dans l'interface.
@@ -86,7 +90,7 @@ Composants shadcn/ui (sur Base UI) dans `components/ui/`, habillés par les jeto
 | `WeeklyBars`                          | idem                                           | Une métrique semaine par semaine (recharts), période en `--bar-current` |
 | `BottlenecksSummary`                  | `components/dashboard/bottlenecks-summary.tsx` | Goulots en bref                                                         |
 | `SettingsSection`                     | `components/settings/settings-section.tsx`     | Réglage : explication à gauche, carte à droite                          |
-| `Logo`                                | `components/logo.tsx`                          | Marque (trois barres montantes sur `--primary`)                         |
+| `Logo`, `LogoSymbol`                  | `components/logo.tsx`                          | Logo XC (docs/brand) : symbole seul ou avec le nom                      |
 | `ThemeButton`, `ThemeSwitch`          | `components/theme-toggle.tsx`                  | Bascule de thème (en-têtes simples, barre latérale)                     |
 | `DemoBanner`                          | `components/demo-banner.tsx`                   | Rappel de la démo publique en lecture seule                             |
 

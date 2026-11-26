@@ -1,4 +1,9 @@
-# XCadence
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/svg/xcadence-logo-horizontal-dark.svg">
+    <img src="docs/brand/svg/xcadence-logo-horizontal-color.svg" alt="XCadence" height="56">
+  </picture>
+</h1>
 
 **Radar de santé d'équipe tech.** XCadence calcule les métriques DORA et les goulots d'une équipe directement depuis GitHub, et les résume chaque semaine pour le CTO, en 5 minutes de lecture.
 
@@ -88,6 +93,7 @@ Stack : TypeScript, pnpm et Turborepo, NestJS, Next.js, Prisma et PostgreSQL 17,
 | Backend : modules, endpoints, jobs             | [docs/03-BACKEND.md](docs/03-BACKEND.md)             |
 | Frontend : pages, composants                   | [docs/04-FRONTEND.md](docs/04-FRONTEND.md)           |
 | Système de design : jetons, composants, règles | [DESIGN.md](DESIGN.md)                               |
+| Logo : fichiers et règles d'usage              | [docs/brand/](docs/brand/README.md)                  |
 | Base de données                                | [docs/05-DATABASE.md](docs/05-DATABASE.md)           |
 | Environnement, `.env`, GitHub App de dev       | [docs/06-ENVIRONNEMENT.md](docs/06-ENVIRONNEMENT.md) |
 | Branches, qualité, CI, revue                   | [docs/07-COLLABORATION.md](docs/07-COLLABORATION.md) |

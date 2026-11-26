@@ -26,7 +26,7 @@ export function BottlenecksView({
   data: BottlenecksResponse | undefined;
 }) {
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 p-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:p-8">
       <div>
         <h1 className="text-2xl font-semibold">Goulots</h1>
         <p className="text-muted-foreground">{subtitle}</p>

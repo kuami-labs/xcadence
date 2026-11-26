@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { Suspense } from 'react';
-import { AppNav } from '@/components/app-nav';
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import { THEME_SCRIPT } from '@/lib/theme-script';
 import { Providers } from './providers';
 import './globals.css';
 
-const geistSans = Geist({
+// Polices du thème Azure Flow (docs/04-FRONTEND.md).
+const inter = Inter({
   variable: '--font-sans',
   subsets: ['latin'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jetbrainsMono = JetBrains_Mono({
+  variable: '--font-jetbrains-mono',
   subsets: ['latin'],
 });
 
@@ -22,14 +22,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
-        <Providers>
-          <Suspense>
-            <AppNav />
-          </Suspense>
-          {children}
-        </Providers>
+    // La classe `dark` est posée avant l'affichage par THEME_SCRIPT : l'écart avec le rendu
+    // serveur est attendu.
+    <html
+      lang="fr"
+      className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className="min-h-full">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

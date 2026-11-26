@@ -65,7 +65,7 @@ export function DashboardView({
   const values = metrics.data?.metrics ?? [];
   const chartValues = values.filter((v) => v.weekStart >= chartPeriod.from);
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 p-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6 sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Tableau de bord</h1>

@@ -16,7 +16,7 @@ export function Settings() {
       <p className="p-8 text-muted-foreground">Aucune organisation : installez la GitHub App.</p>
     );
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 p-8">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:p-8">
       <div>
         <h1 className="text-2xl font-semibold">Paramètres</h1>
         <p className="text-muted-foreground">{organization?.name}</p>

@@ -16,7 +16,7 @@ export function Onboarding() {
     return <p className="p-8 text-muted-foreground">Chargement…</p>;
   const installUrl = config.data?.githubAppInstallUrl;
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 p-8">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:p-8">
       <h1 className="text-2xl font-semibold">Bienvenue sur XCadence</h1>
       <Card>
         <CardHeader>
